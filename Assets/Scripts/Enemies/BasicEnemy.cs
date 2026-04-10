@@ -58,14 +58,27 @@ public class BasicEnemy : EnemyBase
         if (moveDir != Vector2.zero)
         {
             _rb.velocity = moveDir * Speed;
-
-            // Rotate to face movement direction
-            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg - 90f;
-            transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
         else
         {
             _rb.velocity = Vector2.zero;
+        }
+
+        // If in range and can see player, face the player (aiming/strafing).
+        // Otherwise, face the movement direction.
+        if (_ai.DistanceToPlayer <= _ai.AttackRange && _ai.HasLineOfSight)
+        {
+            Vector2 faceDir = ((Vector2)_player.position - (Vector2)transform.position).normalized;
+            if (faceDir.sqrMagnitude > 0.01f)
+            {
+                float angle = Mathf.Atan2(faceDir.y, faceDir.x) * Mathf.Rad2Deg - 90f;
+                transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            }
+        }
+        else if (moveDir != Vector2.zero)
+        {
+            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg - 90f;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
     }
 }

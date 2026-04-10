@@ -7,14 +7,14 @@ using UnityEngine.UI;
 /// </summary>
 public class GaragePanel : MonoBehaviour
 {
-    [Header("UI  (Inspector ?")]
+    [Header("Preview Images (Assign in Inspector)")]
     [SerializeField] private Image  _previewBody;
     [SerializeField] private Image  _previewBarrel;
     [SerializeField] private Image  _previewTrackL;
     [SerializeField] private Image  _previewTrackR;
     [SerializeField] private Button _saveButton;
 
-    [Header(" (Inspector ?")]
+    [Header("Palette Rows (Assign in Inspector)")]
     [SerializeField] private RectTransform _bodyPaletteRow;
     [SerializeField] private RectTransform _tracksPaletteRow;
     [SerializeField] private RectTransform _barrelPaletteRow;

@@ -30,6 +30,9 @@ public class GameManager : MonoBehaviour
 
     public float TotalClearTime { get; private set; }
     public int   CurrentScore   { get; private set; } = 0;
+    public int   TimeBonus      { get; private set; } = 0;
+    public int   LivesBonus     { get; private set; } = 0;
+    public int   KillScore      { get; private set; } = 0;
 
     private float _levelTimer;
     public  float TimeRemaining => _levelTimer;
@@ -105,6 +108,9 @@ public class GameManager : MonoBehaviour
         CurrentLevel   = levelIndex;
         CurrentConfig  = cfg;
         CurrentScore   = 0;
+        KillScore      = 0;
+        TimeBonus      = 0;
+        LivesBonus     = 0;
         TotalClearTime = 0f;
 
         // Timer initialization (-1 means infinite, represented by float.MaxValue internally)
@@ -125,9 +131,14 @@ public class GameManager : MonoBehaviour
         ChangeState(GameState.Playing);
         _enemySpawner?.StartLevel(cfg);
 
-        // L5 Boss HUD
+        // Resume level BGM (looping)
+        AudioManager.Instance?.ResumeGameplayTrack(cfg.BgmTrackIndex);
+
+        // L3 Boss HUD
         if (cfg.HasBoss)
             BossHUDPanel.Show(true);
+        else
+            BossHUDPanel.Show(false);
 
         Debug.Log($"[GameManager] Level {levelIndex} ({cfg.LevelName}) started. TimeLimit={cfg.TimeLimit}s");
     }
@@ -139,14 +150,18 @@ public class GameManager : MonoBehaviour
     /// <summary>Go to level selection screen</summary>
     public void GoToLevelSelect()
     {
+        BossHUDPanel.Show(false);
         ChangeState(GameState.LevelSelect);
+        AudioManager.Instance?.ResumeGameplayTrack(0); // Menu track
     }
 
     /// <summary>Return to main menu (from level select or other screens)</summary>
     public void GoToMainMenu()
     {
         Time.timeScale = 1f;
+        BossHUDPanel.Show(false);
         ChangeState(GameState.MainMenu);
+        AudioManager.Instance?.ResumeGameplayTrack(0); // Menu track
     }
 
     public void TogglePause()
@@ -160,6 +175,7 @@ public class GameManager : MonoBehaviour
     public void AddScore(int pts)
     {
         CurrentScore += pts;
+        KillScore    += pts;
         Debug.Log($"[GameManager] +{pts} pts → Total: {CurrentScore}");
     }
 
@@ -176,6 +192,9 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
 
         CurrentScore   = 0;
+        KillScore      = 0;
+        TimeBonus      = 0;
+        LivesBonus     = 0;
         TotalClearTime = 0f;
 
         _enemySpawner?.ClearAllEnemies();
@@ -198,7 +217,11 @@ public class GameManager : MonoBehaviour
         _levelTimer = cfg.TimeLimit > 0 ? cfg.TimeLimit : float.MaxValue;
         _enemySpawner?.StartLevel(cfg);
 
+        // Resume level BGM (in case victory fanfare was playing)
+        AudioManager.Instance?.ResumeGameplayTrack(cfg.BgmTrackIndex);
+
         if (cfg.HasBoss) BossHUDPanel.Show(true);
+        else BossHUDPanel.Show(false);
 
         Debug.Log($"[GameManager] RestartCurrentLevel done. State={CurrentState}");
     }
@@ -225,8 +248,14 @@ public class GameManager : MonoBehaviour
         SaveSystem.UnlockLevel(CurrentLevel + 1);
         BossHUDPanel.Show(false);
 
+        // Calculate bonus scores before changing state
+        CalculateBonusScore();
+
+        // Play victory fanfare BGM
+        AudioManager.Instance?.PlayVictoryTrack();
+
         ChangeState(GameState.Victory);
-        Debug.Log($"[GameManager] L{CurrentLevel} Cleared! Next level unlocked.");
+        Debug.Log($"[GameManager] L{CurrentLevel} Cleared! Kill={KillScore} Time+={TimeBonus} Lives+={LivesBonus} Total={CurrentScore}");
     }
 
     private void HandlePlayerDied()
@@ -243,6 +272,34 @@ public class GameManager : MonoBehaviour
         BossHUDPanel.Show(false);
         ChangeState(GameState.GameOver);
         Debug.Log("[GameManager] Time up → GameOver");
+    }
+
+    /// <summary>
+    /// Calculate time and lives bonus on level clear.
+    /// TimeBonus = max(0, TimeLimit - ClearTime) × 5 (timed levels only)
+    /// LivesBonus = RemainingLives × 50
+    /// </summary>
+    private void CalculateBonusScore()
+    {
+        // Time bonus: only for timed levels (TimeLimit > 0)
+        TimeBonus = 0;
+        if (CurrentConfig != null && CurrentConfig.TimeLimit > 0)
+        {
+            float remainingTime = Mathf.Max(0f, CurrentConfig.TimeLimit - TotalClearTime);
+            TimeBonus = Mathf.RoundToInt(remainingTime) * 5;
+        }
+
+        // Lives bonus: remaining lives × 50
+        LivesBonus = 0;
+        if (_playerHealth != null)
+        {
+            LivesBonus = _playerHealth.Lives * 50;
+        }
+
+        // Add bonuses to total score
+        CurrentScore += TimeBonus + LivesBonus;
+
+        Debug.Log($"[GameManager] Bonus calculated: TimeBonus={TimeBonus}, LivesBonus={LivesBonus}, FinalScore={CurrentScore}");
     }
 
     // ══════════════════════════════════════════

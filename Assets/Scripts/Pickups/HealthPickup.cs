@@ -8,6 +8,6 @@ public class HealthPickup : PickupBase
     protected override void ApplyEffect(PlayerHealth health, PlayerController controller)
     {
         health.Heal(1);
-        Debug.Log("[Pickup] ?1 ");
+        Debug.Log("[Pickup] Healed +1 HP");
     }
 }

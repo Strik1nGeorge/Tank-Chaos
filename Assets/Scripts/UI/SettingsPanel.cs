@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// </summary>
 public class SettingsPanel : MonoBehaviour
 {
-    [Header("UI  (Inspector ?")]
+    [Header("UI References (Assign in Inspector)")]
     [SerializeField] private Slider _bgmSlider;
     [SerializeField] private Slider _sfxSlider;
     [SerializeField] private Text   _bgmValueText;

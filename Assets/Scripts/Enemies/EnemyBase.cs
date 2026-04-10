@@ -66,11 +66,15 @@ public abstract class EnemyBase : MonoBehaviour
     public void SetArmorMultiplier(int multiplier)
     {
         Health *= multiplier;
-        Debug.Log($"[{name}] Armored! HP ?{Health}");
+        Debug.Log($"[{name}] Armored! HP={Health}");
     }
+
+    protected bool _isDead = false;
 
     public virtual void TakeDamage(int amount)
     {
+        if (_isDead) return;
+
         Health -= amount;
         StartCoroutine(FlashWhite());
 
@@ -78,6 +82,7 @@ public abstract class EnemyBase : MonoBehaviour
 
         if (Health <= 0)
         {
+            _isDead = true;
             Die();
         }
     }

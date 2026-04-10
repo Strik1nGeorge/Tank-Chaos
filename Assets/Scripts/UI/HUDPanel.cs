@@ -7,12 +7,12 @@ using UnityEngine.UI;
 /// </summary>
 public class HUDPanel : MonoBehaviour
 {
-    [Header(" HUD (Inspector ?")]
+    [Header("HUD Text (Assign in Inspector)")]
     [SerializeField] private Text _healthText;
     [SerializeField] private Text _timeText;
     [SerializeField] private Text _scoreText;
 
-    [Header(" (Inspector ?")]
+    [Header("Skill Cooldown Icons (Assign in Inspector)")]
     [SerializeField] private Image _dashMask;
     [SerializeField] private Text  _dashTimerText;
     [SerializeField] private Text  _weaponLabel;
@@ -35,23 +35,29 @@ public class HUDPanel : MonoBehaviour
         if (_weaponMask == null)     _weaponMask     = FindImage("SkillContainer/WeaponBorder/WeaponBg/WeaponMask");
         if (_weaponTimerText == null) _weaponTimerText = FindText("SkillContainer/WeaponBorder/WeaponBg/WeaponMask/WeaponTimerText");
 
+        // Cache player references once during init
+        CachePlayerReferences();
+
         Debug.Log("[UI] HUDPanel initialized with SerializeField bindings");
+    }
+
+    private void CachePlayerReferences()
+    {
+        GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+        if (pObj != null)
+        {
+            _playerHealth = pObj.GetComponent<PlayerHealth>();
+            _playerCtrl = pObj.GetComponent<PlayerController>();
+        }
     }
 
     private void Update()
     {
         if (GameManager.Instance == null) return;
 
-        // Try to find the player
+        // Lazy retry if player reference was lost (e.g. after respawn re-activation)
         if (_playerHealth == null)
-        {
-            GameObject pObj = GameObject.FindGameObjectWithTag("Player");
-            if (pObj != null)
-            {
-                _playerHealth = pObj.GetComponent<PlayerHealth>();
-                _playerCtrl = pObj.GetComponent<PlayerController>();
-            }
-        }
+            CachePlayerReferences();
 
         // Health display
         if (_playerHealth != null)

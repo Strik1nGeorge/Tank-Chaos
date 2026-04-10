@@ -21,7 +21,7 @@ public class LevelConfig
 }
 
 /// <summary>
-/// Static database of all level configurations.
+/// Static database of all level configurations (3 levels).
 /// </summary>
 public static class LevelDatabase
 {
@@ -35,7 +35,7 @@ public static class LevelDatabase
         return _levels[idx];
     }
 
-    public static int TotalLevels => 5;
+    public static int TotalLevels => 3;
 
     private static void Build()
     {
@@ -48,7 +48,7 @@ public static class LevelDatabase
                 LevelIndex        = 1,
                 LevelName         = "The Proving Grounds",
                 LevelSubtitle     = "Eliminate all enemies",
-                TimeLimit         = -1f,
+                TimeLimit         = 150f,
                 BasicEnemyCount   = 10,
                 FastEnemyCount    = 0,
                 InitialSpawnCount = 10,
@@ -56,7 +56,7 @@ public static class LevelDatabase
                 HasArmoredEnemy   = false,
                 HasBoss           = false,
                 ObstacleDensity   = 1.0f,
-                BgmTrackIndex     = 0,
+                BgmTrackIndex     = 1,
             },
 
             // Level 2: The Escalation
@@ -65,8 +65,8 @@ public static class LevelDatabase
             {
                 LevelIndex        = 2,
                 LevelName         = "The Escalation",
-                LevelSubtitle     = "10 basic + 10 fast ?reinforcements incoming",
-                TimeLimit         = -1f,
+                LevelSubtitle     = "10 basic + 10 fast — reinforcements incoming",
+                TimeLimit         = 150f,
                 BasicEnemyCount   = 10,
                 FastEnemyCount    = 10,
                 InitialSpawnCount = 10,
@@ -75,53 +75,16 @@ public static class LevelDatabase
                 HasArmoredEnemy   = false,
                 HasBoss           = false,
                 ObstacleDensity   = 1.0f,
-                BgmTrackIndex     = 1,
-            },
-
-            // Level 3: Blitz Storm
-            // 90-second timed survival, fast enemies only
-            new LevelConfig
-            {
-                LevelIndex        = 3,
-                LevelName         = "Blitz Storm",
-                LevelSubtitle     = "Outrun the clock ?90 seconds!",
-                TimeLimit         = 90f,
-                BasicEnemyCount   = 0,
-                FastEnemyCount    = 15,
-                InitialSpawnCount = 15,
-                RespawnOnDeath    = false,
-                HasArmoredEnemy   = false,
-                HasBoss           = false,
-                ObstacleDensity   = 1.4f,
                 BgmTrackIndex     = 2,
             },
 
-            // Level 4: Siege Protocol
-            // Armored enemies with high HP, slow respawn
-            new LevelConfig
-            {
-                LevelIndex        = 4,
-                LevelName         = "Siege Protocol",
-                LevelSubtitle     = "Armored enemies ?aim for weak spots",
-                TimeLimit         = -1f,
-                BasicEnemyCount   = 10,
-                FastEnemyCount    = 10,
-                InitialSpawnCount = 5,
-                RespawnOnDeath    = true,
-                RespawnDelay      = 4.0f,
-                HasArmoredEnemy   = true,
-                HasBoss           = false,
-                ObstacleDensity   = 1.2f,
-                BgmTrackIndex     = 3 % 4,
-            },
-
-            // Level 5: Titan's Wrath
+            // Level 3: Titan's Wrath
             // Boss fight with reinforcements
             new LevelConfig
             {
-                LevelIndex        = 5,
+                LevelIndex        = 3,
                 LevelName         = "Titan's Wrath",
-                LevelSubtitle     = "Face the Titan ?and survive",
+                LevelSubtitle     = "Face the Titan — and survive",
                 TimeLimit         = -1f,
                 BasicEnemyCount   = 5,
                 FastEnemyCount    = 0,
@@ -130,8 +93,8 @@ public static class LevelDatabase
                 HasArmoredEnemy   = false,
                 HasBoss           = true,
                 BossReinforceCount= 5,
-                ObstacleDensity   = 0.8f, // fewer obstacles so the boss can move
-                BgmTrackIndex     = 0,
+                ObstacleDensity   = 0.8f,
+                BgmTrackIndex     = 3,
             },
         };
     }

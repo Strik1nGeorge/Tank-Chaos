@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private LeaderboardPanel   _leaderboardPanel;
     [SerializeField] private GaragePanel        _garagePanel;
     [SerializeField] private SettingsPanel      _settingsPanel;
+    [SerializeField] private InstructionsPanel  _instructionsPanel;
 
     private void Awake()
     {
@@ -27,6 +28,7 @@ public class UIManager : MonoBehaviour
         if (_leaderboardPanel == null) _leaderboardPanel  = FindInactive<LeaderboardPanel>();
         if (_garagePanel == null)      _garagePanel       = FindInactive<GaragePanel>();
         if (_settingsPanel == null)    _settingsPanel     = FindInactive<SettingsPanel>();
+        if (_instructionsPanel == null)_instructionsPanel = FindInactive<InstructionsPanel>();
 
         Debug.Log($"[UIManager] Panels found: MainMenu={_mainMenu != null}, LevelSelect={_levelSelectPanel != null}, " +
                   $"Pause={_pauseMenu != null}, HUD={_hudPanel != null}, Msg={_msgPanel != null}");
@@ -57,6 +59,11 @@ public class UIManager : MonoBehaviour
             {
                 _settingsPanel?.gameObject.SetActive(true);
                 _settingsPanel?.transform.SetAsLastSibling();
+            },
+            onOpenInstructions: () =>
+            {
+                _instructionsPanel?.gameObject.SetActive(true);
+                _instructionsPanel?.transform.SetAsLastSibling();
             }
         );
 
@@ -73,6 +80,7 @@ public class UIManager : MonoBehaviour
         _leaderboardPanel?.Init();
         _garagePanel?.Init(() => _garagePanel.gameObject.SetActive(false));
         _settingsPanel?.Init();
+        _instructionsPanel?.Init(() => _instructionsPanel.gameObject.SetActive(false));
 
         // ── Default Hidden ────────────────────────────
         SetActive(_levelSelectPanel, false);
@@ -82,6 +90,7 @@ public class UIManager : MonoBehaviour
         SetActive(_leaderboardPanel, false);
         SetActive(_garagePanel,      false);
         SetActive(_settingsPanel,    false);
+        SetActive(_instructionsPanel,false);
 
         // ── Subscribe to State Events ────────────────────────
         if (GameManager.Instance != null)
@@ -103,10 +112,7 @@ public class UIManager : MonoBehaviour
         {
             bool show = state == GameState.LevelSelect;
             _levelSelectPanel.gameObject.SetActive(show);
-            if (show) _levelSelectPanel.Init(
-                onLevelSelected: lvl => GameManager.Instance?.StartLevel(lvl),
-                onBack: () => GameManager.Instance?.GoToMainMenu()
-            ); // Refresh unlock status
+            if (show) _levelSelectPanel.Refresh(); // Refresh unlock status without re-wiring callbacks
         }
 
         // Pause
@@ -130,6 +136,7 @@ public class UIManager : MonoBehaviour
             SetActive(_settingsPanel,    false);
             SetActive(_leaderboardPanel, false);
             SetActive(_garagePanel,      false);
+            SetActive(_instructionsPanel,false);
         }
     }
 

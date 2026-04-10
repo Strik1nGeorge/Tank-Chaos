@@ -35,8 +35,8 @@ public class BossEnemy : EnemyBase
         Damage     = 2;
         ScoreValue = 200;
 
-        // Boss is 2x scale
-        transform.localScale = Vector3.one * 2f;
+        // Boss is slightly smaller than before (was 2x, now 1.7x)
+        transform.localScale = Vector3.one * 1.7f;
 
         SetupVisuals();
         _fireTimer = PHASE1_FIRE_RATE;
@@ -44,6 +44,7 @@ public class BossEnemy : EnemyBase
         // Initialize BossHUD
         BossHUDPanel.UpdateHealth(Health, _maxHealth);
         BossHUDPanel.SetPhaseName("Phase 1  Hunting");
+        Debug.Log("[BossEnemy] Initialized. Sent Health and Phase updates to BossHUDPanel.");
     }
 
     protected override void SetupVisuals()
@@ -58,6 +59,13 @@ public class BossEnemy : EnemyBase
 
         Vector2 dir = ((Vector2)_player.position - (Vector2)transform.position).normalized;
         _rb.velocity = dir * Speed;
+
+        // Rotate to face movement direction
+        if (dir.sqrMagnitude > 0.01f)
+        {
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        }
     }
 
     protected override void HandleAction()
@@ -115,23 +123,32 @@ public class BossEnemy : EnemyBase
 
         // Notify spawner of phase change
         EnemySpawner.Instance?.OnBossPhaseChanged(phase);
-        Debug.Log($"[Boss] Phase ?{phase}  HP={Health}/{_maxHealth}  Speed={Speed}");
+        Debug.Log($"[Boss] Phase -> {phase}  HP={Health}/{_maxHealth}  Speed={Speed}");
     }
 
     // Shooting
     private void FireAtPlayer()
     {
         Vector2 targetPos = _player.position;
+        Vector2 dirToPlayer = (targetPos - (Vector2)transform.position).normalized;
+        
+        // Aiming check: boss's 'up' direction (where it faces) must be aligned with dirToPlayer
+        // transform.up is the top of the sprite (default facing direction in top-down 2D)
+        if (Vector2.Dot(transform.up, dirToPlayer) < 0.9f) // ~25 deg tolerance
+        {
+            // Not facing player yet, skip firing this tick
+            return;
+        }
+
         AudioManager.Instance?.PlayShootSound();
 
         if (_currentPhase >= 2)
         {
             // Spread shot
             float spread = _currentPhase >= 3 ? 30f : 18f;
-            Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
-            FireBulletAt((Vector2)transform.position + Rotate(dir, -spread), BOSS_COLOR);
+            FireBulletAt((Vector2)transform.position + Rotate(dirToPlayer, -spread), BOSS_COLOR);
             FireBulletAt(targetPos, BOSS_COLOR);
-            FireBulletAt((Vector2)transform.position + Rotate(dir, spread), BOSS_COLOR);
+            FireBulletAt((Vector2)transform.position + Rotate(dirToPlayer, spread), BOSS_COLOR);
         }
         else
         {
@@ -166,15 +183,14 @@ public class BossEnemy : EnemyBase
 
     protected override void Die()
     {
+        // Boss-specific cleanup
         BossHUDPanel.UpdateHealth(0, _maxHealth);
         BossHUDPanel.Show(false);
 
-        GameManager.Instance?.AddScore(ScoreValue);
-        VfxManager.SpawnFloatingText(transform.position + Vector3.up, "+200", Color.yellow, 2f, 2f);
-        VfxManager.SpawnExplosion(transform.position, BOSS_COLOR, 30);
-        AudioManager.Instance?.PlayExplosionSound();
+        // Extra boss explosion VFX (larger particle count)
+        VfxManager.SpawnExplosion(transform.position, BOSS_COLOR, 20);
 
-        EnemySpawner.Instance?.OnEnemyDied(this);
-        Destroy(gameObject);
+        // Delegate to base for score, spawner notification, standard VFX, and destruction
+        base.Die();
     }
 }

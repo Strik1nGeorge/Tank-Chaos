@@ -24,10 +24,9 @@ public abstract class PickupBase : MonoBehaviour
         // Skip while paused
         if (Time.timeScale == 0f) return;
 
-        _lifetimeTimer -= Time.deltaTime;
         if (_lifetimeTimer <= 0f)
         {
-            Debug.Log($"[Pickup] ? {gameObject.name}");
+            Debug.Log($"[Pickup] Despawned: {gameObject.name}");
             Destroy(gameObject);
         }
     }
@@ -43,7 +42,7 @@ public abstract class PickupBase : MonoBehaviour
             {
                 ApplyEffect(health, controller);
                 AudioManager.Instance?.PlayPowerupSound();
-                Debug.Log($"[Pickup] ? {gameObject.name}");
+                Debug.Log($"[Pickup] Collected: {gameObject.name}");
                 
                 // Notify spawner so it can track active count
                 PickupSpawner.Instance?.OnPickupCollected();

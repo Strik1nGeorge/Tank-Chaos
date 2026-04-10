@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// </summary>
 public class ScreenMessagePanel : MonoBehaviour
 {
-    [Header("UI  (Inspector ?")]
+    [Header("UI References (Assign in Inspector)")]
     [SerializeField] private Text       _titleText;
     [SerializeField] private Text       _subtitleText;
     [SerializeField] private Text       _bodyText;
@@ -84,6 +84,17 @@ public class ScreenMessagePanel : MonoBehaviour
             case GameState.Victory:
                 bool isFinalLevel = (level >= LevelDatabase.TotalLevels);
                 
+                // Read bonus breakdown from GameManager
+                int killScore  = GameManager.Instance != null ? GameManager.Instance.KillScore  : 0;
+                int timeBonus  = GameManager.Instance != null ? GameManager.Instance.TimeBonus  : 0;
+                int livesBonus = GameManager.Instance != null ? GameManager.Instance.LivesBonus : 0;
+
+                string scoreBreakdown = $"Kill Score: {killScore}\n" +
+                                        $"Time Bonus: +{timeBonus}\n" +
+                                        $"Lives Bonus: +{livesBonus}\n" +
+                                        $"──────────\n" +
+                                        $"Total: {score}";
+
                 // Show save input
                 SetActive(_inputFieldGO, true);
                 SetActive(_saveBtnGO,    true);
@@ -96,10 +107,10 @@ public class ScreenMessagePanel : MonoBehaviour
 
                 if (isFinalLevel)
                 {
-                    // Final level (L5) victory
+                    // Final level (L3) victory
                     SetTitle("TITAN DEFEATED!", new Color(1f, 0.85f, 0.1f));
-                    SetSubtitle("You conquered all 5 levels!", Color.white);
-                    SetBody($"Final Score: {score}   Time: {time:F1}s\nRecord your legendary run!");
+                    SetSubtitle("You conquered all 3 levels!", Color.white);
+                    SetBody($"{scoreBreakdown}\n\nTime: {time:F1}s\nRecord your legendary run!");
                     SetActive(_restartBtnGO, true);
                     SetActive(_quitBtnGO,    true);
                 }
@@ -109,7 +120,7 @@ public class ScreenMessagePanel : MonoBehaviour
                     LevelConfig nextCfg = LevelDatabase.Get(level + 1);
                     SetTitle($"LEVEL {level} CLEAR!", new Color(0.3f, 1f, 0.4f));
                     SetSubtitle($"Next: {nextCfg.LevelName}", Color.white);
-                    SetBody($"Score: {score}   Time: {time:F1}s\nSave your score before moving on!");
+                    SetBody($"{scoreBreakdown}\n\nTime: {time:F1}s");
                     SetActive(_nextLevelBtnGO, true);
                     SetActive(_restartBtnGO,   true);
                 }
@@ -125,7 +136,7 @@ public class ScreenMessagePanel : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"[UI] ScreenMessagePanel ?state={state}, level={level}, score={score}");
+        Debug.Log($"[UI] ScreenMessagePanel setup: state={state}, level={level}, score={score}");
     }
 
     // --- Helper methods ---
@@ -154,7 +165,9 @@ public class ScreenMessagePanel : MonoBehaviour
     {
         if (go == null) return;
         Button btn = go.GetComponent<Button>();
-        btn?.onClick.AddListener(() => action?.Invoke());
+        if (btn == null) return;
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(() => action?.Invoke());
     }
 
     private void SetActive(GameObject go, bool active)

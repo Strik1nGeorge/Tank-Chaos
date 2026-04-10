@@ -71,11 +71,12 @@ public class UISceneBuilder
         outline.effectColor = new Color(0, 0, 0, 0.8f);
         outline.effectDistance = new Vector2(6, -6);
 
-        CreateButton(mainMenu.transform, "StartButton",    "START GAME",   new Vector2(0, -10),  new Vector2(400, 70), new Color(0.15f, 0.5f, 0.2f));
-        CreateButton(mainMenu.transform, "GarageBtn",      "GARAGE",       new Vector2(0, -90),  new Vector2(400, 70), new Color(0.2f, 0.45f, 0.7f));
-        CreateButton(mainMenu.transform, "LeaderboardBtn", "LEADERBOARDS", new Vector2(0, -170), new Vector2(400, 70), new Color(0.6f, 0.4f, 0.1f));
-        CreateButton(mainMenu.transform, "SettingsBtn",    "SETTINGS",     new Vector2(0, -250), new Vector2(400, 70), new Color(0.4f, 0.4f, 0.5f));
-        CreateButton(mainMenu.transform, "QuitButton",     "QUIT TO OS",   new Vector2(0, -330), new Vector2(400, 70), new Color(0.6f, 0.15f, 0.15f));
+        CreateButton(mainMenu.transform, "StartButton",    "START GAME",   new Vector2(0, 30),  new Vector2(400, 70), new Color(0.15f, 0.5f, 0.2f));
+        CreateButton(mainMenu.transform, "GarageBtn",      "GARAGE",       new Vector2(0, -50),  new Vector2(400, 70), new Color(0.2f, 0.45f, 0.7f));
+        CreateButton(mainMenu.transform, "LeaderboardBtn", "LEADERBOARDS", new Vector2(0, -130), new Vector2(400, 70), new Color(0.6f, 0.4f, 0.1f));
+        CreateButton(mainMenu.transform, "InstructionsBtn","HOW TO PLAY",  new Vector2(0, -210), new Vector2(400, 70), new Color(0.5f, 0.3f, 0.6f));
+        CreateButton(mainMenu.transform, "SettingsBtn",    "SETTINGS",     new Vector2(0, -290), new Vector2(400, 70), new Color(0.4f, 0.4f, 0.5f));
+        CreateButton(mainMenu.transform, "QuitButton",     "QUIT TO OS",   new Vector2(0, -370), new Vector2(400, 70), new Color(0.6f, 0.15f, 0.15f));
 
         // -----------------------------------------------
         // 2. LevelSelectPanel
@@ -172,20 +173,20 @@ public class UISceneBuilder
 
         CreateImage(msgPanel.transform, "Background", Fill(), new Color(0, 0, 0, 0.85f));
         
-        // Text elements (positioned top to bottom)
-        CreateText(msgPanel.transform, "TitleText", "MESSAGE", 80, Color.white, new Vector2(0, 280));
-        CreateText(msgPanel.transform, "SubtitleText", "", 36, Color.yellow, new Vector2(0, 200));
-        CreateText(msgPanel.transform, "BodyText", "", 24, new Color(0.85f, 0.85f, 0.85f), new Vector2(0, 130));
+        // Text elements (positioned top to bottom with more spacing)
+        CreateText(msgPanel.transform, "TitleText", "MESSAGE", 80, Color.white, new Vector2(0, 320));
+        CreateText(msgPanel.transform, "SubtitleText", "", 30, Color.yellow, new Vector2(0, 240));
+        CreateText(msgPanel.transform, "BodyText", "", 22, new Color(0.85f, 0.85f, 0.85f), new Vector2(0, 120));
 
         // Victory-specific interaction area (Input + Save)
-        CreateInputField(msgPanel.transform, "NameInput", "ENTER YOUR NAME...", new Vector2(0, 45), new Vector2(400, 60));
-        CreateButton(msgPanel.transform, "SaveBtn", "SAVE PERFORMANCE", new Vector2(0, -25), new Vector2(400, 60), new Color(0.1f, 0.4f, 0.15f));
+        CreateInputField(msgPanel.transform, "NameInput", "ENTER YOUR NAME...", new Vector2(0, -30), new Vector2(400, 55));
+        CreateButton(msgPanel.transform, "SaveBtn", "SAVE PERFORMANCE", new Vector2(0, -95), new Vector2(400, 55), new Color(0.1f, 0.4f, 0.15f));
 
         // Bottom flow buttons
-        CreateButton(msgPanel.transform, "NextLevelBtn", "NEXT LEVEL", new Vector2(0, -100), new Vector2(360, 60), new Color(0.15f, 0.5f, 0.2f));
-        CreateButton(msgPanel.transform, "RetryBtn", "TRY AGAIN", new Vector2(0, -170), new Vector2(360, 60), new Color(0.3f, 0.35f, 0.5f));
-        CreateButton(msgPanel.transform, "RestartBtn", "MAIN MENU", new Vector2(0, -170), new Vector2(360, 60), new Color(0.25f, 0.25f, 0.3f));
-        CreateButton(msgPanel.transform, "QuitBtn", "QUIT TO DESKTOP", new Vector2(0, -240), new Vector2(360, 60), new Color(0.5f, 0.15f, 0.15f));
+        CreateButton(msgPanel.transform, "NextLevelBtn", "NEXT LEVEL", new Vector2(0, -165), new Vector2(360, 55), new Color(0.15f, 0.5f, 0.2f));
+        CreateButton(msgPanel.transform, "RetryBtn", "TRY AGAIN", new Vector2(0, -165), new Vector2(360, 55), new Color(0.3f, 0.35f, 0.5f));
+        CreateButton(msgPanel.transform, "RestartBtn", "MAIN MENU", new Vector2(0, -230), new Vector2(360, 55), new Color(0.25f, 0.25f, 0.3f));
+        CreateButton(msgPanel.transform, "QuitBtn", "QUIT TO DESKTOP", new Vector2(0, -300), new Vector2(360, 55), new Color(0.5f, 0.15f, 0.15f));
 
         msgPanel.SetActive(false);
 
@@ -328,7 +329,35 @@ public class UISceneBuilder
         settingsPanel.SetActive(false);
 
         // -----------------------------------------------
-        // BossHUDPanel (L5 specific, anchored bottom center)
+        // 9. InstructionsPanel
+        // -----------------------------------------------
+        GameObject insPanel = CreateFullPanel(canvasGO.transform, "InstructionsPanel");
+        insPanel.AddComponent<InstructionsPanel>();
+
+        CreateImage(insPanel.transform, "Background", Fill(), new Color(0.05f, 0.05f, 0.08f, 0.98f));
+        CreateText(insPanel.transform, "TitleText", "HOW TO PLAY", 60, Color.white, new Vector2(0, 350));
+
+        string insTextStr = 
+                "<b>W / A / S / D:</b> Move Tank\n" +
+                "<b>Left-Click:</b> Shoot\n" +
+                "<b>Right-Click:</b> Switch Weapon (Cannon / Shotgun)\n" +
+                "<b>Left-Shift:</b> Sprint / Dash (1.5s Cooldown)\n" +
+                "<b>Spacebar:</b> Pause Game\n\n" +
+                "<b>OBJECTIVE</b>\n" +
+                "Clear all enemies in the sector to advance to the next level.\n\n" +
+                "<b>GEAR UP</b>\n" +
+                "Pick up health packs (Red) to restore lives,\n" +
+                "damage boosts (Orange) or shields (Yellow) to survive!";
+
+        GameObject insTextObj = CreateText(insPanel.transform, "InstructionsText", insTextStr, 28, new Color(0.8f, 0.8f, 0.8f), Centered(new Vector2(900, 500), new Vector2(0, 0)));
+        insTextObj.GetComponent<Text>().supportRichText = true;
+
+        CreateButton(insPanel.transform, "CloseButton", "CLOSE", new Vector2(0, -300), new Vector2(300, 60), new Color(0.5f, 0.15f, 0.15f));
+
+        insPanel.SetActive(false);
+
+        // -----------------------------------------------
+        // BossHUDPanel (L3 Boss fight, anchored bottom center)
         // -----------------------------------------------
         GameObject bossHUD = new GameObject("BossHUDPanel", typeof(RectTransform));
         bossHUD.transform.SetParent(canvasGO.transform, false);

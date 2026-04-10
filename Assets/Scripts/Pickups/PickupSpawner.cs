@@ -9,9 +9,9 @@ public class PickupSpawner : MonoBehaviour
 {
     public static PickupSpawner Instance { get; private set; }
 
-    private const int   MAX_ACTIVE_PICKUPS = 2;   // Max simultaneous pickups on map
-    private const float SPAWN_INTERVAL_MIN = 15f; // Min seconds between spawns
-    private const float SPAWN_INTERVAL_MAX = 20f; // Max seconds between spawns
+    private int   _maxActivePickups = 2;   // Max simultaneous pickups on map
+    private float _spawnIntervalMin = 15f; // Min seconds between spawns
+    private float _spawnIntervalMax = 20f; // Max seconds between spawns
 
     private int   _activePickups = 0;
     private float _spawnTimer;
@@ -30,17 +30,33 @@ public class PickupSpawner : MonoBehaviour
 
     private void Update()
     {
-        // Only spawn during Level 2 gameplay
+        // Only spawn during Level 2+ gameplay
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.CurrentState != GameState.Playing) return;
-        if (GameManager.Instance.CurrentLevel != 2) return;
+        
+        int currentLevel = GameManager.Instance.CurrentLevel;
+        if (currentLevel < 2) return;
 
-        if (_activePickups >= MAX_ACTIVE_PICKUPS) return;
+        // Adjust parameters based on level
+        if (currentLevel == 2)
+        {
+            _maxActivePickups = 3;
+            _spawnIntervalMin = 8f;
+            _spawnIntervalMax = 12f;
+        }
+        else if (currentLevel >= 3)
+        {
+            _maxActivePickups = 4;
+            _spawnIntervalMin = 5f;
+            _spawnIntervalMax = 10f;
+        }
+
+        if (_activePickups >= _maxActivePickups) return;
 
         _spawnTimer -= Time.deltaTime;
         if (_spawnTimer <= 0f)
         {
-            SpawnRandomPickup();
+            SpawnRandomPickup(currentLevel);
             ResetSpawnTimer();
         }
     }
@@ -53,25 +69,56 @@ public class PickupSpawner : MonoBehaviour
 
     private void ResetSpawnTimer()
     {
-        _spawnTimer = Random.Range(SPAWN_INTERVAL_MIN, SPAWN_INTERVAL_MAX);
+        _spawnTimer = Random.Range(_spawnIntervalMin, _spawnIntervalMax);
     }
 
     private bool _spawnHealthNext = true;
 
-    private void SpawnRandomPickup()
+    private void SpawnRandomPickup(int level)
     {
         Vector2 spawnPos = FindEmptySpawnPosition();
         if (spawnPos == Vector2.zero)
         {
-            Debug.LogWarning("[PickupSpawner] ");
+            Debug.LogWarning("[PickupSpawner] Could not find empty spawn position");
             return;
         }
 
-        // Alternate between health and damage-boost
-        bool isHealth = _spawnHealthNext;
-        _spawnHealthNext = !_spawnHealthNext;
+        // Determine pickup type
+        // 0: Health, 1: DamageBoost, 2: Shield (Level 3+ only)
+        int pickupType = 0;
         
-        string pickupName = isHealth ? "HealthPickup" : "DamageBoostPickup";
+        if (level < 3)
+        {
+            pickupType = _spawnHealthNext ? 0 : 1;
+            _spawnHealthNext = !_spawnHealthNext;
+        }
+        else
+        {
+            // Level 3 random pool: 40% Health, 40% Damage, 20% Shield
+            float rand = Random.value;
+            if (rand < 0.4f) pickupType = 0;
+            else if (rand < 0.8f) pickupType = 1;
+            else pickupType = 2;
+        }
+        
+        string pickupName = "";
+        Color pickupColor = Color.white;
+        
+        switch (pickupType)
+        {
+            case 0:
+                pickupName = "HealthPickup";
+                pickupColor = new Color(0.2f, 0.9f, 0.2f); // Green
+                break;
+            case 1:
+                pickupName = "DamageBoostPickup";
+                pickupColor = new Color(0.2f, 0.4f, 0.9f); // Blue
+                break;
+            case 2:
+                pickupName = "ShieldPickup";
+                pickupColor = new Color(0.9f, 0.8f, 0.1f); // Yellow
+                break;
+        }
         
         GameObject go = new GameObject(pickupName);
         go.transform.position = new Vector3(spawnPos.x, spawnPos.y, 0f);
@@ -82,8 +129,7 @@ public class PickupSpawner : MonoBehaviour
         // Colored square sprite
         SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
         sr.sprite = BuildSquareSprite();
-        // Green for health, blue for damage boost
-        sr.color = isHealth ? new Color(0.2f, 0.9f, 0.2f) : new Color(0.2f, 0.4f, 0.9f); 
+        sr.color = pickupColor;
         sr.sortingOrder = 4; // Above ground tiles
         // Scale to 0.6x0.6
         go.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
@@ -94,13 +140,12 @@ public class PickupSpawner : MonoBehaviour
         // col.isTrigger is set by PickupBase.Awake
 
         // Attach the appropriate pickup component
-        if (isHealth)
-            go.AddComponent<HealthPickup>();
-        else
-            go.AddComponent<DamageBoostPickup>();
+        if (pickupType == 0) go.AddComponent<HealthPickup>();
+        else if (pickupType == 1) go.AddComponent<DamageBoostPickup>();
+        else if (pickupType == 2) go.AddComponent<ShieldPickup>();
 
         _activePickups++;
-        Debug.Log($"[Pickup]  {pickupName} ?{spawnPos} (=? =)");
+        Debug.Log($"[Pickup] Spawned {pickupName} at {spawnPos} (Active: {_activePickups})");
     }
 
     /// <summary>
@@ -125,12 +170,16 @@ public class PickupSpawner : MonoBehaviour
         return Vector2.zero;
     }
 
+    private static Sprite _cachedSquareSprite;
     private static Sprite BuildSquareSprite()
     {
+        if (_cachedSquareSprite != null) return _cachedSquareSprite;
+
         Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         tex.SetPixel(0, 0, Color.white);
         tex.Apply();
         tex.filterMode = FilterMode.Point;
-        return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+        _cachedSquareSprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+        return _cachedSquareSprite;
     }
 }

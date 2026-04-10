@@ -184,14 +184,5 @@ public class GameBootstrapper : MonoBehaviour
         vfxGO.AddComponent<VfxManager>();
     }
 
-    // --- Utility ---
-
-    private static Sprite BuildSquareSprite()
-    {
-        Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-        tex.SetPixel(0, 0, Color.white);
-        tex.Apply();
-        tex.filterMode = FilterMode.Point;
-        return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-    }
 }
+

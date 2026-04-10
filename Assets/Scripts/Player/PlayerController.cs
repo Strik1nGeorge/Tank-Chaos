@@ -305,6 +305,6 @@ public class PlayerController : MonoBehaviour
     {
         DamageMultiplier  = 2;
         _damageBoostTimer = duration;
-        Debug.Log($"[PlayerController] ?{DamageMultiplier}?{duration}s");
+        Debug.Log($"[PlayerController] Damage boost x{DamageMultiplier} for {duration}s");
     }
 }

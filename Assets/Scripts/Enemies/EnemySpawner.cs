@@ -6,7 +6,7 @@ using UnityEngine;
 /// - L1, L3: Basic enemies
 /// - L2, L4: Basic + Fast enemies with respawn-on-death
 /// - L4: Armored enemies
-/// - L5: Boss + reinforcements
+/// - L3: Boss + reinforcements
 /// </summary>
 public class EnemySpawner : MonoBehaviour
 {
@@ -50,7 +50,7 @@ public class EnemySpawner : MonoBehaviour
                     _respawnTimer = _config?.RespawnDelay ?? 1.0f;
                 else
                     CheckClear(); // No more pending — check if level is clear
-                    }
+            }
         }
     }
 
@@ -68,9 +68,9 @@ public class EnemySpawner : MonoBehaviour
         _pendingRespawnCount = 0;
         _respawnTimer       = 0f;
 
-        Debug.Log($"[EnemySpawner] StartLevel {cfg.LevelIndex} ?Basic={_basicRemaining} Fast={_fastRemaining} Boss={cfg.HasBoss}");
+        Debug.Log($"[EnemySpawner] StartLevel {cfg.LevelIndex} — Basic={_basicRemaining} Fast={_fastRemaining} Boss={cfg.HasBoss}");
 
-        // L5: spawn Boss
+        // L3: spawn Boss
         if (cfg.HasBoss)
         {
             SpawnBoss();
@@ -173,7 +173,7 @@ public class EnemySpawner : MonoBehaviour
         GameObject prefab = Resources.Load<GameObject>(prefabName);
         if (prefab == null)
         {
-            Debug.LogError($"[EnemySpawner] ?{prefabName} Prefab?Build Prefabs");
+            Debug.LogError($"[EnemySpawner] Missing {prefabName}! Use Tools > Game Tools > Build Prefabs");
             return;
         }
 
@@ -197,7 +197,7 @@ public class EnemySpawner : MonoBehaviour
         GameObject prefab = Resources.Load<GameObject>("Prefabs/BossEnemy");
         if (prefab == null)
         {
-            Debug.LogError("[EnemySpawner] ?Prefabs/BossEnemy?Build Prefabs");
+            Debug.LogError("[EnemySpawner] Missing Prefabs/BossEnemy! Use Tools > Game Tools > Build Prefabs");
             return;
         }
         Object.Instantiate(prefab, pos, Quaternion.identity);
@@ -220,10 +220,19 @@ public class EnemySpawner : MonoBehaviour
 
     private void CheckClear()
     {
-        bool bossStillAlive = _bossActive > 0;
+        if (_config != null && _config.HasBoss)
+        {
+            if (_bossActive <= 0)
+            {
+                Debug.Log("[EnemySpawner] Boss defeated! Level cleared.");
+                OnAllEnemiesCleared?.Invoke();
+            }
+            return; // Ignore normal enemy count in boss levels
+        }
+
         bool normalStillAlive = (_basicRemaining + _fastRemaining + _activeEnemies + _pendingRespawnCount) > 0;
 
-        if (!bossStillAlive && !normalStillAlive)
+        if (!normalStillAlive)
         {
             Debug.Log("[EnemySpawner] All enemies cleared!");
             OnAllEnemiesCleared?.Invoke();

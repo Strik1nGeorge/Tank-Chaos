@@ -6,7 +6,7 @@ using UnityEngine.UI;
 /// </summary>
 public class PauseMenuPanel : MonoBehaviour
 {
-    [Header("UI  (Inspector ?")]
+    [Header("UI References (Assign in Inspector)")]
     [SerializeField] private Button _resumeButton;
     [SerializeField] private Button _restartButton;
     [SerializeField] private Button _mainMenuButton;
@@ -18,6 +18,7 @@ public class PauseMenuPanel : MonoBehaviour
         if (_restartButton == null)   _restartButton   = FindButton("RestartButton");
         if (_mainMenuButton == null)  _mainMenuButton  = FindButton("QuitButton");
 
+        _resumeButton?.onClick.RemoveAllListeners();
         _resumeButton?.onClick.AddListener(() =>
         {
             Debug.Log("[UI] Pause: RESUME");
@@ -25,6 +26,7 @@ public class PauseMenuPanel : MonoBehaviour
         });
 
         // Restart current level
+        _restartButton?.onClick.RemoveAllListeners();
         _restartButton?.onClick.AddListener(() =>
         {
             Debug.Log("[UI] Pause: RESTART LEVEL");
@@ -32,6 +34,7 @@ public class PauseMenuPanel : MonoBehaviour
         });
 
         // Return to main menu
+        _mainMenuButton?.onClick.RemoveAllListeners();
         _mainMenuButton?.onClick.AddListener(() =>
         {
             Debug.Log("[UI] Pause: MAIN MENU");

@@ -8,6 +8,6 @@ public class DamageBoostPickup : PickupBase
     protected override void ApplyEffect(PlayerHealth health, PlayerController controller)
     {
         controller.ActivateDamageBoost(5f);
-        Debug.Log("[Pickup] ");
+        Debug.Log("[Pickup] Damage boost activated");
     }
 }

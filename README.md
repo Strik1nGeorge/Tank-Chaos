@@ -28,21 +28,19 @@ Control a tank from a top-down perspective. Move with WASD, aim with the mouse, 
 
 ---
 
-## Levels
+### Level Progression (3 Levels)
 
-| # | Name | Description |
-|---|------|-------------|
-| L1 | **The Proving Grounds** | 10 basic enemies — eliminate all |
-| L2 | **The Escalation** | 10 basic + 10 fast; killed enemies respawn as reinforcements |
-| L3 | **Blitz Storm** | 15 fast enemies; 90-second time limit |
-| L4 | **Siege Protocol** | Armored enemies with 3× HP — aim for weak spots |
-| L5 | **Titan's Wrath** | 3-phase Boss + reinforcements |
+| Level | Name | Description |
+|-------|------|-------------|
+| 1 | **The Proving Grounds** | 10 basic enemies, 150s time limit |
+| 2 | **The Escalation** | 20 mixed enemies with respawn waves, 150s time limit |
+| 3 | **Titan's Wrath** | Boss fight with reinforcements, no time limit |
 
 Levels unlock sequentially. Progress is saved locally so you can pick up where you left off.
 
 ---
 
-## Boss — The Titan (L5)
+## Boss — The Titan (L3)
 
 The Titan has **60 HP** and three distinct phases:
 
@@ -117,7 +115,7 @@ Assets/
 
 1. Clone or download this repository
 2. Open the project in **Unity Hub** with Unity 2022.3.x
-3. Open `Assets/Scenes/SampleScene.unity`
+3. Open `Assets/Scenes/GameScene.unity` (or `MainGame.unity`)
 4. Press **Play**
 
 ### Rebuilding the UI (optional)
@@ -133,7 +131,7 @@ Tools > Game Tools > Build UI Scene
 ## Building / Packaging
 
 1. **File → Build Settings** (`Ctrl+Shift+B`)
-2. Confirm `Assets/Scenes/SampleScene` is listed under *Scenes In Build*
+2. Confirm `Assets/Scenes/GameScene` is listed under *Scenes In Build*
 3. Select target platform (e.g. **PC, Mac & Linux Standalone → Windows x86_64**)
 4. Click **Build** and choose an output folder (e.g. `Builds/Windows/`)
 

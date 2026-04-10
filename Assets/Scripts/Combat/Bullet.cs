@@ -74,10 +74,13 @@ public class Bullet : MonoBehaviour
                 PlayerHealth ph = other.GetComponent<PlayerHealth>();
                 if (ph != null)
                 {
+                    // Only shake camera if player actually takes damage (not invincible)
+                    bool wasInvincible = ph.IsInvincible;
                     ph.TakeDamage(_damage);
                     AudioManager.Instance?.PlayExplosionSound();
                     VfxManager.SpawnExplosion(ph.transform.position, new Color(0.3f, 0.7f, 1f), 10);
-                    CameraShake.TriggerShake(0.3f, 0.2f);
+                    if (!wasInvincible)
+                        CameraShake.TriggerShake(0.3f, 0.2f);
                     ReturnToPool();
                 }
             }

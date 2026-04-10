@@ -76,7 +76,7 @@ public class BulletPool : MonoBehaviour
             b.SetActive(false);
             _pool.Enqueue(b);
         }
-        Debug.Log($"[BulletPool]  {POOL_SIZE}");
+        Debug.Log($"[BulletPool] Prewarmed {POOL_SIZE} bullets");
     }
 
     /// <summary>Create a new bullet instance. Uses the prefab if available, otherwise builds one from code.</summary>
@@ -117,12 +117,16 @@ public class BulletPool : MonoBehaviour
         return go;
     }
 
+    private static Sprite _cachedSquareSprite;
     private static Sprite MakeSquareSprite()
     {
+        if (_cachedSquareSprite != null) return _cachedSquareSprite;
+
         Texture2D tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         tex.SetPixel(0, 0, Color.white);
         tex.Apply();
         tex.filterMode = FilterMode.Point;
-        return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+        _cachedSquareSprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+        return _cachedSquareSprite;
     }
 }

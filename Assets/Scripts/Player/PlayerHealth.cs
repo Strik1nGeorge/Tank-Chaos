@@ -25,11 +25,15 @@ public class PlayerHealth : MonoBehaviour
     public event Action           OnPlayerDied;   // all lives lost
     public event Action           OnPlayerRespawn;// respawned with new life
 
-    // ── Unity lifecycle ──
+    private SpriteRenderer _sr;
+    private Color _originalColor = Color.white;
+
     private void Awake()
     {
         CurrentHP = MAX_HP;
         Lives     = MAX_LIVES;
+        _sr = GetComponentInChildren<SpriteRenderer>();
+        if (_sr != null) _originalColor = _sr.color;
     }
 
     private void Update()
@@ -38,7 +42,10 @@ public class PlayerHealth : MonoBehaviour
         {
             _invincibleTimer -= Time.deltaTime;
             if (_invincibleTimer <= 0f)
+            {
                 IsInvincible = false;
+                if (_sr != null) _sr.color = _originalColor; // Restore color
+            }
         }
     }
 
@@ -96,6 +103,16 @@ public class PlayerHealth : MonoBehaviour
         StartInvincibility();
     }
 
+    /// <summary>Grants temporary invincibility (Shield buff).</summary>
+    public void GrantShield(float duration)
+    {
+        IsInvincible = true;
+        _invincibleTimer = Mathf.Max(_invincibleTimer, duration);
+        if (_sr != null) _sr.color = Color.yellow; // Visual feedback
+        VfxManager.SpawnFloatingText(transform.position, "SHIELD UP!", Color.yellow);
+        Debug.Log($"[PlayerHealth] Granted shield for {duration}s");
+    }
+
     // ── Internal ──
     private void HandleDeath()
     {
@@ -127,7 +144,7 @@ public class PlayerHealth : MonoBehaviour
         OnHPChanged?.Invoke(CurrentHP, MAX_HP);
         OnPlayerRespawn?.Invoke();
 
-        Debug.Log($"[PlayerHealth]  @ {spawnPos}{Lives}");
+        Debug.Log($"[PlayerHealth] Respawned @ {spawnPos}, Lives remaining: {Lives}");
     }
 
     private void StartInvincibility()

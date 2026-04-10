@@ -23,7 +23,6 @@ public class BossHUDPanel : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        gameObject.SetActive(false);
         AutoFind();
     }
 
@@ -42,6 +41,11 @@ public class BossHUDPanel : MonoBehaviour
         }
         if (_fillImage == null && _healthSlider != null)
             _fillImage = _healthSlider.fillRect?.GetComponent<Image>();
+
+        // Debug logging for missing components
+        if (_healthSlider == null) Debug.LogWarning("[BossHUD] Missing Slider component! Health bar won't update.");
+        if (_bossNameText == null) Debug.LogWarning("[BossHUD] Missing 'BossName' Text component or child.");
+        if (_phaseText == null) Debug.LogWarning("[BossHUD] Missing 'PhaseText' Text component or child.");
     }
 
     // --- Public static API ---
@@ -84,7 +88,15 @@ public class BossHUDPanel : MonoBehaviour
         if (_instance == null)
         {
             BossHUDPanel found = FindFirstObjectByType<BossHUDPanel>(FindObjectsInactive.Include);
-            if (found != null) _instance = found;
+            if (found != null) 
+            {
+                _instance = found;
+                Debug.Log("[BossHUD] Found BossHUDPanel instance in scene.");
+            }
+            else
+            {
+                Debug.LogWarning("[BossHUD] Could not find any BossHUDPanel in the scene! Is it added to the Canvas?");
+            }
         }
     }
 }

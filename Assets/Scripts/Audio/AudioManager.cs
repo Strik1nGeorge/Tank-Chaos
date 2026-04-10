@@ -15,6 +15,7 @@ public class AudioManager : MonoBehaviour
     private AudioClip[] _bgmClips;
     private string[]    _bgmNames;
     private int         _currentTrackIndex = 0;
+    private int         _victoryTrackIndex = -1; // Index of "Triumph of the Dawn"
 
     // --- SFX Synthesis Fields ---
     private AudioSource _sfxSource; // driven by OnAudioFilterRead
@@ -97,8 +98,14 @@ public class AudioManager : MonoBehaviour
             {
                 // Format display name (replace underscores with spaces)
                 _bgmNames[i] = loaded[i].name.Replace("_", " ");
+
+                // Find the victory track by name
+                if (loaded[i].name.Contains("Triumph"))
+                    _victoryTrackIndex = i;
             }
             Debug.Log($"[Audio] Loaded {loaded.Length} BGM tracks: {string.Join(", ", _bgmNames)}");
+            if (_victoryTrackIndex >= 0)
+                Debug.Log($"[Audio] Victory track found at index {_victoryTrackIndex}: {_bgmNames[_victoryTrackIndex]}");
         }
         else
         {
@@ -143,6 +150,28 @@ public class AudioManager : MonoBehaviour
     {
         if (_bgmClips.Length == 0) return;
         PlayTrack(index % _bgmClips.Length);
+    }
+
+    /// <summary>Play the victory fanfare track ("Triumph of the Dawn"). Non-looping.</summary>
+    public void PlayVictoryTrack()
+    {
+        if (_bgmClips.Length == 0 || _victoryTrackIndex < 0)
+        {
+            Debug.LogWarning("[Audio] Victory track not found, keeping current BGM");
+            return;
+        }
+
+        _bgmSource.loop = false; // Play once as fanfare
+        _bgmSource.clip = _bgmClips[_victoryTrackIndex];
+        _bgmSource.Play();
+        Debug.Log($"[Audio] Victory fanfare: {_bgmNames[_victoryTrackIndex]}");
+    }
+
+    /// <summary>Resume the standard gameplay track by index (restores looping).</summary>
+    public void ResumeGameplayTrack(int trackIndex)
+    {
+        _bgmSource.loop = true;
+        PlayTrackByIndex(trackIndex);
     }
 
     /// <summary>Play the shoot sound effect.</summary>
@@ -222,7 +251,7 @@ public class AudioManager : MonoBehaviour
                 for (int c = 0; c < channels; c++)
                 {
                     data[i + c] += output; // Additive mix into the SFX AudioSource stream
-                    }
+                }
             }
         }
     }

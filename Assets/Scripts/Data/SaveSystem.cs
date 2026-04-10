@@ -52,7 +52,7 @@ public static class SaveSystem
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[SaveSystem] ? {e.Message}");
+            Debug.LogError($"[SaveSystem] Load error: {e.Message}");
             return new AllLeaderboards();
         }
     }
@@ -91,11 +91,11 @@ public static class SaveSystem
         {
             string json = JsonUtility.ToJson(all, true);
             File.WriteAllText(_saveFilePath, json);
-            Debug.Log($"[SaveSystem] L{levelIndex} ? {playerName} {score}pts {clearTime:F1}s");
+            Debug.Log($"[SaveSystem] L{levelIndex} saved: {playerName} {score}pts {clearTime:F1}s");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[SaveSystem] : {e.Message}");
+            Debug.LogError($"[SaveSystem] Save error: {e.Message}");
         }
     }
 }

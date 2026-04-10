@@ -9,18 +9,23 @@ public class LevelSelectPanel : MonoBehaviour
 {
     private System.Action<int> _onLevelSelected;
     private System.Action _onBack;
-
     public void Init(System.Action<int> onLevelSelected, System.Action onBack = null)
     {
         _onLevelSelected = onLevelSelected;
         _onBack = onBack;
 
-        // Clear old buttons from previous Init calls
+        Refresh();
+        WireBackButton();
+    }
+
+    /// <summary>Refreshes the level button unlock states without re-wiring callbacks.</summary>
+    public void Refresh()
+    {
+        // Clear old buttons from previous calls
         foreach (Transform child in transform)
             if (child.name.StartsWith("LevelBtn_")) Destroy(child.gameObject);
 
         BuildLevelButtons();
-        WireBackButton();
     }
 
     // Bind back button at runtime (Editor AddListener is not serialized)

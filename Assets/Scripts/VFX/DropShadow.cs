@@ -29,7 +29,7 @@ public class DropShadow : MonoBehaviour
         _shadowSr.sprite = _targetSr.sprite;
         _shadowSr.color = ShadowColor;
         _shadowSr.sortingOrder = _targetSr.sortingOrder - 1; // Render behind main sprite
-        }
+    }
 
     private void LateUpdate()
     {

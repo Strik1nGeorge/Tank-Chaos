@@ -3,17 +3,17 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 
 /// <summary>
-/// Leaderboard panel showing top scores for each of the 5 levels with tab navigation.
+/// Leaderboard panel showing top scores for each of the 3 levels with tab navigation.
 /// References are set via Inspector or resolved at runtime as fallback.
 /// </summary>
 public class LeaderboardPanel : MonoBehaviour
 {
-    [Header("UI  (Inspector ?")]
+    [Header("UI References (Assign in Inspector)")]
     [SerializeField] private Transform _entriesContainer;
     [SerializeField] private Button    _backButton;
 
     private int _selectedLevel = 1;
-    private Button[] _tabButtons = new Button[5];
+    private Button[] _tabButtons = new Button[3];
 
     public void Init()
     {
@@ -53,15 +53,15 @@ public class LeaderboardPanel : MonoBehaviour
         // Clear existing tabs
         foreach (Transform child in tabRow) Destroy(child.gameObject);
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
             int levelIdx = i + 1;
             GameObject go = new GameObject($"Tab_{levelIdx}", typeof(RectTransform));
             go.transform.SetParent(tabRow, false);
 
             RectTransform r = go.GetComponent<RectTransform>();
-            r.sizeDelta = new Vector2(130, 45);
-            r.anchoredPosition = new Vector2(-260 + i * 130, 0);
+            r.sizeDelta = new Vector2(150, 45);
+            r.anchoredPosition = new Vector2(-160 + i * 160, 0);
 
             Image bg = go.AddComponent<Image>();
             bg.color = (levelIdx == _selectedLevel)
