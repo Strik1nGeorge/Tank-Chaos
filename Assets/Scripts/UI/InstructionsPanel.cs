@@ -34,8 +34,11 @@ public class InstructionsPanel : MonoBehaviour
                 "<b>Left-Shift:</b> Sprint / Dash (1.5s Cooldown)\n" +
                 "<b>Spacebar:</b> Pause Game\n\n" +
                 "<b>OBJECTIVE</b>\n" +
-                "Clear all enemies in the sector to advance to the next level. " +
-                "Pick up health packs (Red) to restore lives and damage boosts (Orange) or shields (Yellow) to survive!";
+                "Clear all enemies in the sector to advance to the next level.\n\n" +
+                "<b>ITEMS (Drops from dead enemies!)</b>\n" +
+                "<b>Green:</b> Restore Health\n" +
+                "<b>Blue:</b> Double Damage\n" +
+                "<b>Cyan:</b> Pierce-Wall Lasers";
         }
 
         _closeButton?.onClick.RemoveAllListeners();

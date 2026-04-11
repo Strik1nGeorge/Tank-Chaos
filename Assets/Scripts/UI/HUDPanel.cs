@@ -29,8 +29,8 @@ public class HUDPanel : MonoBehaviour
         if (_timeText == null)   _timeText   = FindText("TopBar/TimeText");
         if (_scoreText == null)  _scoreText  = FindText("TopBar/ScoreText");
 
-        if (_dashMask == null)       _dashMask       = FindImage("SkillContainer/DashBorder/DashBg/DashMask");
-        if (_dashTimerText == null)   _dashTimerText   = FindText("SkillContainer/DashBorder/DashBg/DashMask/DashTimerText");
+        if (_dashMask == null)       _dashMask       = FindImage("SkillContainer/SprintBorder/SprintBg/SprintMask");
+        if (_dashTimerText == null)   _dashTimerText   = FindText("SkillContainer/SprintBorder/SprintBg/SprintMask/SprintTimerText");
         if (_weaponLabel == null)    _weaponLabel    = FindText("SkillContainer/WeaponBorder/WeaponBg/WeaponLabel");
         if (_weaponMask == null)     _weaponMask     = FindImage("SkillContainer/WeaponBorder/WeaponBg/WeaponMask");
         if (_weaponTimerText == null) _weaponTimerText = FindText("SkillContainer/WeaponBorder/WeaponBg/WeaponMask/WeaponTimerText");
@@ -92,14 +92,11 @@ public class HUDPanel : MonoBehaviour
         // Skill cooldown icons
         if (_playerCtrl != null)
         {
-            // Dash
-            float dProg = _playerCtrl.DashCooldownProgress;
-            _dashMask.gameObject.SetActive(dProg > 0f);
-            if (dProg > 0f)
-            {
-                _dashMask.fillAmount = dProg;
-                _dashTimerText.text = (dProg * 1.5f).ToString("F1");
-            }
+            // Stamina Bar (Repurposed from Dash icon)
+            float staminaRatio = _playerCtrl.DashCooldownProgress;
+            _dashMask.gameObject.SetActive(true); // Always show stamina status
+            _dashMask.fillAmount = 1f - staminaRatio; // Fill represents "used" portion or "cooldown"
+            _dashTimerText.text = staminaRatio < 1f ? $"{(staminaRatio * 100):0}%" : "";
 
             // Weapon Toggle Cooldown
             bool isCannon = _playerCtrl.CurrentWeapon == PlayerController.WeaponType.Cannon;

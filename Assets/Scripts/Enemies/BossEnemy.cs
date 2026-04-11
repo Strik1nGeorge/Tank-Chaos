@@ -11,13 +11,13 @@ using UnityEngine;
 public class BossEnemy : EnemyBase
 {
     // Boss constants
-    private const int   BOSS_MAX_HP       = 60;
-    private const float PHASE1_SPEED      = 1.5f;
-    private const float PHASE2_SPEED      = 2.8f;
-    private const float PHASE3_SPEED      = 4.5f;
+    private const int   BOSS_MAX_HP       = 45;
+    private const float PHASE1_SPEED      = 1.0f;
+    private const float PHASE2_SPEED      = 1.8f;
+    private const float PHASE3_SPEED      = 3.0f;
     private const float PHASE1_FIRE_RATE  = 2.0f;
     private const float PHASE2_FIRE_RATE  = 1.0f;
-    private const float PHASE3_FIRE_RATE  = 0.4f;
+    private const float PHASE3_FIRE_RATE  = 0.7f;
 
     private int   _maxHealth;
     private int   _currentPhase = 0; // 0 = not initialized
@@ -57,15 +57,94 @@ public class BossEnemy : EnemyBase
     {
         if (_player == null || _rb == null) return;
 
-        Vector2 dir = ((Vector2)_player.position - (Vector2)transform.position).normalized;
-        _rb.velocity = dir * Speed;
+        Vector2 toPlayer  = (Vector2)_player.position - (Vector2)transform.position;
+        Vector2 seekDir   = toPlayer.normalized;
+        int     wallMask  = LayerMask.GetMask("Default");
 
-        // Rotate to face movement direction
-        if (dir.sqrMagnitude > 0.01f)
+        // ── Line-of-Sight check ────────────────────────────────────────────
+        // Cast directly toward the player. If nothing blocks us, chase directly.
+        bool hasLOS = true;
+        RaycastHit2D losHit = Physics2D.Raycast(transform.position, seekDir, toPlayer.magnitude, wallMask);
+        if (losHit.collider != null && losHit.collider.CompareTag("Wall"))
+            hasLOS = false;
+
+        Vector2 moveDir;
+
+        if (hasLOS)
         {
-            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+            // Direct chase — player is visible
+            moveDir      = seekDir;
+            _wanderTimer = 0f; // Reset wander so we re-evaluate immediately when LOS is lost
+        }
+        else
+        {
+            // ── Open-Space Wandering ────────────────────────────────────────
+            // Re-evaluate best open direction periodically (not every frame)
+            _wanderTimer -= Time.deltaTime;
+            if (_wanderTimer <= 0f)
+            {
+                _wanderDir   = FindBestOpenDirection(seekDir, wallMask);
+                _wanderTimer = 0.55f; // Re-evaluate every 0.55 s
+            }
+            moveDir = _wanderDir;
+        }
+
+        // ── Smooth direction transition ────────────────────────────────────
+        // Rotate current movement direction toward target at a fixed turn rate.
+        // This prevents snap-turning when swapping between chase and wander.
+        float turnSpeed = hasLOS ? 5.0f : 3.0f; // Chase turns tighter than wander
+        _currentMoveDir = Vector2.MoveTowards(_currentMoveDir, moveDir, turnSpeed * Time.deltaTime).normalized;
+
+        _rb.velocity = _currentMoveDir * Speed;
+
+        if (_currentMoveDir.sqrMagnitude > 0.01f)
+        {
+            float angle = Mathf.Atan2(_currentMoveDir.y, _currentMoveDir.x) * Mathf.Rad2Deg - 90f;
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
+    }
+
+    // Movement state
+    private float   _wanderTimer   = 0f;
+    private Vector2 _wanderDir     = Vector2.up;
+    private Vector2 _currentMoveDir= Vector2.up; // Actual interpolated direction
+
+    /// <summary>
+    /// Sample 8 equally-spaced directions and score each by:
+    ///   score = clearDistance × max(0, dot(dir, toPlayer))
+    /// This finds a direction that has open space AND is generally toward the player.
+    /// </summary>
+    private Vector2 FindBestOpenDirection(Vector2 toPlayerDir, int wallMask)
+    {
+        Vector2 bestDir   = _wanderDir; // Keep last direction as fallback
+        float   bestScore = -1f;
+        float   probeLen  = 4f; // How far ahead to look per candidate direction
+
+        for (int i = 0; i < 8; i++)
+        {
+            float   angle    = i * 45f;
+            Vector2 candidate = new Vector2(
+                Mathf.Cos(angle * Mathf.Deg2Rad),
+                Mathf.Sin(angle * Mathf.Deg2Rad));
+
+            RaycastHit2D hit  = Physics2D.Raycast(transform.position, candidate, probeLen, wallMask);
+            float clearDist   = (hit.collider != null) ? hit.distance : probeLen;
+
+            // Dot product with toPlayer: prefer directions that move generally toward player
+            float alignment   = Mathf.Max(0f, Vector2.Dot(candidate, toPlayerDir));
+
+            // Score blends openness (70%) and player alignment (30%)
+            float score = clearDist * (0.7f + alignment * 0.3f);
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestDir   = candidate;
+            }
+        }
+
+        Debug.Log($"[Boss] LOS blocked — wandering toward {bestDir} (score:{bestScore:F2})");
+        return bestDir;
     }
 
     protected override void HandleAction()

@@ -25,10 +25,10 @@ public class ScreenMessagePanel : MonoBehaviour
         if (_titleText == null)     _titleText     = FindText("TitleText");
         if (_subtitleText == null)  _subtitleText  = FindText("SubtitleText");
         if (_bodyText == null)      _bodyText      = FindText("BodyText");
-        if (_nextLevelBtnGO == null) _nextLevelBtnGO = FindGO("NextLevelBtn");
-        if (_retryBtnGO == null)    _retryBtnGO    = FindGO("RetryBtn");
-        if (_restartBtnGO == null)  _restartBtnGO  = FindGO("RestartBtn");
-        if (_quitBtnGO == null)     _quitBtnGO     = FindGO("QuitBtn");
+        if (_nextLevelBtnGO == null) _nextLevelBtnGO = FindGO("ButtonContainer/NextLevelBtn");
+        if (_retryBtnGO == null)    _retryBtnGO    = FindGO("ButtonContainer/RetryBtn");
+        if (_restartBtnGO == null)  _restartBtnGO  = FindGO("ButtonContainer/RestartBtn");
+        if (_quitBtnGO == null)     _quitBtnGO     = FindGO("ButtonContainer/QuitBtn");
         if (_inputFieldGO == null)  _inputFieldGO  = FindGO("NameInput");
         if (_saveBtnGO == null)     _saveBtnGO     = FindGO("SaveBtn");
 

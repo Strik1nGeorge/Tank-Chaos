@@ -122,7 +122,12 @@ public class GameManager : MonoBehaviour
 
         // Reset/Regenerate map
         if (_mapGenerator != null)
-            _mapGenerator.GenerateWithDensity(cfg.ObstacleDensity);
+        {
+            if (cfg.UseFixedMap)
+                _mapGenerator.GenerateBossArena();
+            else
+                _mapGenerator.GenerateWithDensity(cfg.ObstacleDensity);
+        }
 
         // Reset player
         _playerHealth?.gameObject.SetActive(true);

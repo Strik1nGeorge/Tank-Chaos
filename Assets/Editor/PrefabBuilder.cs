@@ -81,24 +81,46 @@ public class PrefabBuilder
         int pLayer = LayerMask.NameToLayer("Player");
         if (pLayer != -1) player.layer = pLayer;
 
+        // Base Hull (Body)
         SpriteRenderer sr = player.AddComponent<SpriteRenderer>();
         sr.sprite = _savedSprite;
         sr.color = new Color(0.2f, 0.5f, 0.8f);
         sr.sortingOrder = 5;
         player.AddComponent<DropShadow>();
 
-        // Barrel
-        GameObject barrel = CreateChild(player, "Barrel", new Vector3(0f, 0.4f, 0f), new Vector3(0.2f, 0.5f, 1f));
-        barrel.GetComponent<SpriteRenderer>().color = new Color(0.3f, 0.3f, 0.3f);
-        barrel.GetComponent<SpriteRenderer>().sortingOrder = 7;
+        // Inner Armor Plate (Creates a beveled look)
+        GameObject armor = CreateChild(player, "ArmorPlate", Vector3.zero, new Vector3(0.8f, 0.8f, 1f));
+        armor.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.15f); // Semi-transparent bright overlay
+        armor.GetComponent<SpriteRenderer>().sortingOrder = 6;
 
-        GameObject trackL = CreateChild(player, "TrackL", new Vector3(-0.45f, 0f, 0f), new Vector3(0.2f, 1.1f, 1f));
-        trackL.GetComponent<SpriteRenderer>().color = new Color(0.25f, 0.25f, 0.25f);
-        trackL.GetComponent<SpriteRenderer>().sortingOrder = 6;
+        // Tracks (Left and Right)
+        GameObject trackL = CreateChild(player, "TrackL", new Vector3(-0.45f, 0f, 0f), new Vector3(0.2f, 1.15f, 1f));
+        trackL.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f);
+        trackL.GetComponent<SpriteRenderer>().sortingOrder = 4; // Tracks under the chassis
 
-        GameObject trackR = CreateChild(player, "TrackR", new Vector3(0.45f, 0f, 0f), new Vector3(0.2f, 1.1f, 1f));
-        trackR.GetComponent<SpriteRenderer>().color = new Color(0.25f, 0.25f, 0.25f);
-        trackR.GetComponent<SpriteRenderer>().sortingOrder = 6;
+        GameObject trackR = CreateChild(player, "TrackR", new Vector3(0.45f, 0f, 0f), new Vector3(0.2f, 1.15f, 1f));
+        trackR.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f);
+        trackR.GetComponent<SpriteRenderer>().sortingOrder = 4;
+
+        // Engine Vent (Rear details)
+        GameObject engine = CreateChild(player, "EngineVent", new Vector3(0f, -0.35f, 0f), new Vector3(0.5f, 0.15f, 1f));
+        engine.GetComponent<SpriteRenderer>().color = new Color(0.15f, 0.15f, 0.15f);
+        engine.GetComponent<SpriteRenderer>().sortingOrder = 7;
+
+        // Turret Base (Dome)
+        GameObject turret = CreateChild(player, "Turret", new Vector3(0f, -0.05f, 0f), new Vector3(0.5f, 0.5f, 1f));
+        turret.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, 0.2f); // Semi-transparent dark overlay
+        turret.GetComponent<SpriteRenderer>().sortingOrder = 8;
+
+        // Turret Hatch / Commander Cupola
+        GameObject hatch = CreateChild(player, "Hatch", new Vector3(0f, -0.05f, 0f), new Vector3(0.25f, 0.25f, 1f));
+        hatch.GetComponent<SpriteRenderer>().color = new Color(0.1f, 0.1f, 0.1f);
+        hatch.GetComponent<SpriteRenderer>().sortingOrder = 9;
+
+        // Main Gun Barrel
+        GameObject barrel = CreateChild(player, "Barrel", new Vector3(0f, 0.4f, 0f), new Vector3(0.18f, 0.6f, 1f));
+        barrel.GetComponent<SpriteRenderer>().color = new Color(0.35f, 0.35f, 0.35f);
+        barrel.GetComponent<SpriteRenderer>().sortingOrder = 7; // Under the Turret Dome but over armor
 
         // Physics
         Rigidbody2D rb = player.AddComponent<Rigidbody2D>();
@@ -144,17 +166,50 @@ public class PrefabBuilder
         int eLayer = LayerMask.NameToLayer("Enemy");
         if (eLayer != -1) boss.layer = eLayer;
 
-        // Boss visuals: 2x scale, dark red
+        // Boss visuals: Base Hull
         SpriteRenderer sr = boss.AddComponent<SpriteRenderer>();
         sr.sprite = _savedSprite;
         sr.color = new Color(0.6f, 0.05f, 0.05f);
         sr.sortingOrder = 5;
         boss.transform.localScale = Vector3.one * 2f;
 
-        // Barrel (thicker)
+        // Heavy Armor Plating (Beveled look)
+        GameObject armor = CreateChild(boss, "HeavyArmor", Vector3.zero, new Vector3(0.85f, 0.85f, 1f));
+        armor.GetComponent<SpriteRenderer>().color = new Color(0.8f, 0.1f, 0.1f); // Brighter red center
+        armor.GetComponent<SpriteRenderer>().sortingOrder = 6;
+
+        // Heavy Tracks
+        GameObject trackL = CreateChild(boss, "TrackL", new Vector3(-0.48f, 0f, 0f), new Vector3(0.25f, 1.25f, 1f));
+        trackL.GetComponent<SpriteRenderer>().color = new Color(0.15f, 0.15f, 0.15f);
+        trackL.GetComponent<SpriteRenderer>().sortingOrder = 4;
+
+        GameObject trackR = CreateChild(boss, "TrackR", new Vector3(0.48f, 0f, 0f), new Vector3(0.25f, 1.25f, 1f));
+        trackR.GetComponent<SpriteRenderer>().color = new Color(0.15f, 0.15f, 0.15f);
+        trackR.GetComponent<SpriteRenderer>().sortingOrder = 4;
+
+        // Twin Engine Vents
+        GameObject engineL = CreateChild(boss, "EngineL", new Vector3(-0.2f, -0.35f, 0f), new Vector3(0.25f, 0.2f, 1f));
+        engineL.GetComponent<SpriteRenderer>().color = new Color(0.1f, 0.1f, 0.1f);
+        engineL.GetComponent<SpriteRenderer>().sortingOrder = 7;
+        
+        GameObject engineR = CreateChild(boss, "EngineR", new Vector3(0.2f, -0.35f, 0f), new Vector3(0.25f, 0.2f, 1f));
+        engineR.GetComponent<SpriteRenderer>().color = new Color(0.1f, 0.1f, 0.1f);
+        engineR.GetComponent<SpriteRenderer>().sortingOrder = 7;
+
+        // Massive Turret Base
+        GameObject turret = CreateChild(boss, "Turret", new Vector3(0f, -0.05f, 0f), new Vector3(0.6f, 0.6f, 1f));
+        turret.GetComponent<SpriteRenderer>().color = new Color(0.4f, 0.0f, 0.0f); // Dark crimson
+        turret.GetComponent<SpriteRenderer>().sortingOrder = 8;
+        
+        // Commander Hatch
+        GameObject hatch = CreateChild(boss, "Hatch", new Vector3(0f, -0.05f, 0f), new Vector3(0.3f, 0.3f, 1f));
+        hatch.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f);
+        hatch.GetComponent<SpriteRenderer>().sortingOrder = 9;
+
+        // Main Heavy Gun Barrel
         GameObject barrel = CreateChild(boss, "Barrel", new Vector3(0f, 0.45f, 0f), new Vector3(0.25f, 0.5f, 1f));
         barrel.GetComponent<SpriteRenderer>().color = new Color(0.3f, 0.0f, 0.0f);
-        barrel.GetComponent<SpriteRenderer>().sortingOrder = 6;
+        barrel.GetComponent<SpriteRenderer>().sortingOrder = 7; // Under Turret Base
 
         // Physics
         Rigidbody2D rb = boss.AddComponent<Rigidbody2D>();
@@ -205,15 +260,40 @@ public class PrefabBuilder
         int eLayer = LayerMask.NameToLayer("Enemy");
         if (eLayer != -1) enemy.layer = eLayer;
 
+        // Base Hull
         SpriteRenderer sr = enemy.AddComponent<SpriteRenderer>();
         sr.sprite = _savedSprite;
         sr.sortingOrder = 5;
         enemy.AddComponent<DropShadow>();
 
-        // Barrel
-        GameObject barrel = CreateChild(enemy, "Barrel", new Vector3(0f, 0.4f, 0f), new Vector3(0.2f, 0.4f, 1f));
-        barrel.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f);
-        barrel.GetComponent<SpriteRenderer>().sortingOrder = 6;
+        // Inner Armor Plate (Creates a beveled look)
+        GameObject armor = CreateChild(enemy, "ArmorPlate", Vector3.zero, new Vector3(0.8f, 0.8f, 1f));
+        armor.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0.15f); // Semi-transparent bright overlay
+        armor.GetComponent<SpriteRenderer>().sortingOrder = 6;
+
+        // Tracks (Left and Right)
+        GameObject trackL = CreateChild(enemy, "TrackL", new Vector3(-0.45f, 0f, 0f), new Vector3(0.2f, 1.1f, 1f));
+        trackL.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f);
+        trackL.GetComponent<SpriteRenderer>().sortingOrder = 4;
+
+        GameObject trackR = CreateChild(enemy, "TrackR", new Vector3(0.45f, 0f, 0f), new Vector3(0.2f, 1.1f, 1f));
+        trackR.GetComponent<SpriteRenderer>().color = new Color(0.2f, 0.2f, 0.2f);
+        trackR.GetComponent<SpriteRenderer>().sortingOrder = 4;
+
+        // Engine Vent
+        GameObject engine = CreateChild(enemy, "EngineVent", new Vector3(0f, -0.3f, 0f), new Vector3(0.4f, 0.15f, 1f));
+        engine.GetComponent<SpriteRenderer>().color = new Color(0.15f, 0.15f, 0.15f);
+        engine.GetComponent<SpriteRenderer>().sortingOrder = 7;
+
+        // Turret Base
+        GameObject turret = CreateChild(enemy, "Turret", new Vector3(0f, 0f, 0f), new Vector3(0.4f, 0.4f, 1f));
+        turret.GetComponent<SpriteRenderer>().color = new Color(0f, 0f, 0f, 0.3f); // Dark overlay
+        turret.GetComponent<SpriteRenderer>().sortingOrder = 8;
+
+        // Main Gun Barrel
+        GameObject barrel = CreateChild(enemy, "Barrel", new Vector3(0f, 0.4f, 0f), new Vector3(0.15f, 0.5f, 1f));
+        barrel.GetComponent<SpriteRenderer>().color = new Color(0.25f, 0.25f, 0.25f);
+        barrel.GetComponent<SpriteRenderer>().sortingOrder = 7; // Under turret
 
         Rigidbody2D rb = enemy.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;

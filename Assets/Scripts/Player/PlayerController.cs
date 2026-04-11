@@ -11,10 +11,12 @@ using UnityEngine.EventSystems;
 public class PlayerController : MonoBehaviour
 {
     // ── Constants ──
-    private const float BASE_SPEED       = 4f;
-    private const float SPRINT_MULT      = 2.2f;
-    private const float SPRINT_COOLDOWN  = 1.5f;
-    private const float SPRINT_DURATION  = 0.4f;
+    private const float BASE_SPEED       = 4.5f;
+    private const float SPRINT_MULT      = 1.6f;
+    private const float MAX_STAMINA      = 100f;
+    private const float STAMINA_DRAIN    = 40f;   // Drains in 2.5s
+    private const float STAMINA_REGEN    = 25f;   // Regens in 4s
+    private const float STAMINA_RECOVERY = 20f;   // Prevents stuttering
     private const float FIRE_COOLDOWN    = 1.0f;
     private const float SHOTGUN_COOLDOWN = 0.8f;
     private const float BULLET_SPEED     = 10f;
@@ -28,29 +30,29 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer _sr;
     private Color _baseBodyColor;
 
-    // ── Timers ──
+    // ── Timers / State ──
     private float _fireTimer;
-    private float _sprintCooldownTimer;
-    private float _sprintDurationTimer;
+    private float _currentStamina;
+    private bool  _isExhausted;
     private bool  _isSprinting;
     private float _weaponToggleTimer;
 
     // Current weapon type
     public WeaponType CurrentWeapon { get; private set; } = WeaponType.Cannon;
 
-    // HUD cooldown progress (0 = ready, 1 = just used)
+    // HUD stamina progress (0 = empty, 1 = full)
     public float DashCooldownProgress
     {
         get
         {
-            if (_isSprinting) return 1f;
-            return _sprintCooldownTimer > 0 ? _sprintCooldownTimer / SPRINT_COOLDOWN : 0f;
+            return _currentStamina / MAX_STAMINA;
         }
     }
     public float WeaponToggleProgress => _weaponToggleTimer > 0 ? _weaponToggleTimer / WEAPON_TOGGLE_CD : 0f;
 
     public  int  DamageMultiplier { get; set; } = 1;
     private float _damageBoostTimer;
+    private float _laserTimer;
 
     // Prevents firing when clicking on UI
     private bool  _wasPointerOverUI;
@@ -68,6 +70,7 @@ public class PlayerController : MonoBehaviour
         _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         _baseBodyColor = SkinManager.GetBodyColor();
+        _currentStamina = MAX_STAMINA;
     }
 
     // ── Public API ──
@@ -98,6 +101,20 @@ public class PlayerController : MonoBehaviour
         UpdateVisuals();
     }
 
+    private void HandleStaminaRegen()
+    {
+        if (!_isSprinting)
+        {
+            _currentStamina = Mathf.MoveTowards(_currentStamina, MAX_STAMINA, STAMINA_REGEN * Time.deltaTime);
+            
+            // Recover from exhaustion once enough stamina is back
+            if (_isExhausted && _currentStamina >= STAMINA_RECOVERY)
+            {
+                _isExhausted = false;
+            }
+        }
+    }
+
     private void FixedUpdate()
     {
         HandleMovement();
@@ -115,24 +132,26 @@ public class PlayerController : MonoBehaviour
         _rb.velocity = dir * spd;
     }
 
-    // ── Sprint ──
+    // ── Sprint / Stamina ──
     private void HandleSprint()
     {
-        if (_isSprinting)
+        bool wantsToSprint = Input.GetKey(KeyCode.LeftShift);
+        
+        if (wantsToSprint && !_isExhausted && _currentStamina > 0)
         {
-            if (_sprintDurationTimer <= 0f)
+            _isSprinting = true;
+            _currentStamina -= STAMINA_DRAIN * Time.deltaTime;
+            
+            if (_currentStamina <= 0f)
             {
-                _isSprinting          = false;
-                _sprintCooldownTimer  = SPRINT_COOLDOWN;
+                _currentStamina = 0f;
+                _isExhausted = true;
+                _isSprinting = false;
             }
-            return;
         }
-
-        bool canSprint = _sprintCooldownTimer <= 0f;
-        if (canSprint && Input.GetKeyDown(KeyCode.LeftShift))
+        else
         {
-            _isSprinting          = true;
-            _sprintDurationTimer  = SPRINT_DURATION;
+            _isSprinting = false;
         }
     }
 
@@ -177,7 +196,12 @@ public class PlayerController : MonoBehaviour
         Vector2 dir = (mouseWorld - transform.position).normalized;
 
         // Fire based on current weapon
-        if (CurrentWeapon == WeaponType.Cannon)
+        if (_laserTimer > 0f)
+        {
+            FireLaser(dir);
+            _fireTimer = FIRE_COOLDOWN * 0.8f;
+        }
+        else if (CurrentWeapon == WeaponType.Cannon)
         {
             FireSingleBullet(dir);
             _fireTimer = FIRE_COOLDOWN;
@@ -194,14 +218,34 @@ public class PlayerController : MonoBehaviour
         GameObject bullet = BulletPool.Instance?.Get();
         if (bullet != null)
         {
-            bullet.transform.position = transform.position + (Vector3)(dir * 0.6f);
+            Vector3 spawnPos = transform.position + (Vector3)(dir * 0.65f);
+            bullet.transform.position = spawnPos;
             bullet.transform.rotation = Quaternion.identity;
 
             Bullet b = bullet.GetComponent<Bullet>();
             b?.Init(dir, BULLET_SPEED, DamageMultiplier, isPlayer: true);
 
-            VfxManager.SpawnMuzzleFlash(bullet.transform.position, transform.rotation);
+            VfxManager.SpawnMuzzleFlash(spawnPos, transform.rotation);
             AudioManager.Instance?.PlayShootSound();
+        }
+    }
+
+    private void FireLaser(Vector2 dir)
+    {
+        GameObject bullet = BulletPool.Instance?.Get();
+        if (bullet != null)
+        {
+            Vector3 spawnPos = transform.position + (Vector3)(dir * 0.75f);
+            bullet.transform.position = spawnPos;
+            bullet.transform.rotation = Quaternion.identity;
+
+            Bullet b = bullet.GetComponent<Bullet>();
+            b?.Init(dir, BULLET_SPEED * 1.5f, 2, isPlayer: true, maxLifetime: 3f, isLaser: true);
+
+            VfxManager.SpawnMuzzleFlash(spawnPos, transform.rotation);
+            // Spawn some extra cyan dust
+            VfxManager.SpawnExplosion(spawnPos, new Color(0.2f, 0.9f, 0.9f), 3);
+            AudioManager.Instance?.PlayPowerupSound(); // Use powerup sound for laser fire just to sound cool
         }
     }
 
@@ -214,7 +258,7 @@ public class PlayerController : MonoBehaviour
             GameObject bullet = BulletPool.Instance?.Get();
             if (bullet != null)
             {
-                bullet.transform.position = transform.position + (Vector3)(dir * 0.6f);
+                bullet.transform.position = transform.position + (Vector3)(dir * 0.65f);
                 bullet.transform.rotation = Quaternion.identity;
 
                 // Calculate spread direction
@@ -223,12 +267,13 @@ public class PlayerController : MonoBehaviour
                 Vector2 spreadDir = new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), Mathf.Sin(finalAngle * Mathf.Deg2Rad));
 
                 Bullet b = bullet.GetComponent<Bullet>();
-                // Shotgun pellets last 0.3s
-                b?.Init(spreadDir, SHOTGUN_SPEED, DamageMultiplier, isPlayer: true, 0.3f, isShotgun: true);
+                // Shotgun pellets: during boost each pellet does 2 damage, otherwise 1
+                int shotgunDmg = DamageMultiplier > 1 ? 2 : 1;
+                b?.Init(spreadDir, SHOTGUN_SPEED, shotgunDmg, isPlayer: true, 0.3f, isShotgun: true);
             }
         }
 
-        Vector3 spawnPos = transform.position + (Vector3)(dir * 0.6f);
+        Vector3 spawnPos = transform.position + (Vector3)(dir * 0.65f);
         VfxManager.SpawnMuzzleFlash(spawnPos, transform.rotation);
         // Extra muzzle flashes for spread effect
         VfxManager.SpawnMuzzleFlash(spawnPos, transform.rotation * Quaternion.Euler(0, 0, 15f));
@@ -266,6 +311,14 @@ public class PlayerController : MonoBehaviour
                 targetColor = Color.Lerp(_baseBodyColor, new Color(1f, 0.4f, 0f), 0.7f);
             }
         }
+        else if (_laserTimer > 0f)
+        {
+            // Flash cyan while laser is active
+            if (Mathf.Sin(Time.time * 25f) > 0)
+            {
+                targetColor = Color.Lerp(_baseBodyColor, new Color(0.2f, 0.9f, 0.9f), 0.7f);
+            }
+        }
 
         // Flicker alpha while invincible
         if (_health != null && _health.IsInvincible)
@@ -283,9 +336,9 @@ public class PlayerController : MonoBehaviour
     // ── Timer management ──
     private void HandleTimers()
     {
+        HandleStaminaRegen();
+
         if (_fireTimer > 0f) _fireTimer -= Time.deltaTime;
-        if (_sprintCooldownTimer > 0f) _sprintCooldownTimer -= Time.deltaTime;
-        if (_sprintDurationTimer > 0f) _sprintDurationTimer -= Time.deltaTime;
         if (_weaponToggleTimer > 0f) _weaponToggleTimer -= Time.deltaTime;
         if (_damageBoostTimer > 0f)
         {
@@ -296,6 +349,14 @@ public class PlayerController : MonoBehaviour
                 Debug.Log("[PlayerController] Damage boost ended");
             }
         }
+        if (_laserTimer > 0f)
+        {
+            _laserTimer -= Time.deltaTime;
+            if (_laserTimer <= 0f)
+            {
+                Debug.Log("[PlayerController] Laser mode ended");
+            }
+        }
     }
 
     // ── Damage boost API ──
@@ -303,8 +364,15 @@ public class PlayerController : MonoBehaviour
     /// <summary>Doubles damage for the given duration in seconds.</summary>
     public void ActivateDamageBoost(float duration)
     {
-        DamageMultiplier  = 2;
+        DamageMultiplier  = 3;
         _damageBoostTimer = duration;
         Debug.Log($"[PlayerController] Damage boost x{DamageMultiplier} for {duration}s");
+    }
+
+    /// <summary>Grants piercing laser weapon for the given duration in seconds.</summary>
+    public void ActivateLaser(float duration)
+    {
+        _laserTimer = Mathf.Max(_laserTimer, duration);
+        Debug.Log($"[PlayerController] Laser Mode for {duration}s");
     }
 }

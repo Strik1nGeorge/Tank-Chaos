@@ -17,6 +17,7 @@ public class LevelConfig
     public bool   HasBoss;
     public int    BossReinforceCount;
     public float  ObstacleDensity;    // 1.0 = default
+    public bool   UseFixedMap;        // true = use a pre-designed fixed map
     public int    BgmTrackIndex;      // 0-based, used by AudioManager
 }
 
@@ -93,7 +94,8 @@ public static class LevelDatabase
                 HasArmoredEnemy   = false,
                 HasBoss           = true,
                 BossReinforceCount= 5,
-                ObstacleDensity   = 0.8f,
+                ObstacleDensity   = 0.6f,   // Reduced so Boss has more room to navigate
+                UseFixedMap       = false,
                 BgmTrackIndex     = 3,
             },
         };

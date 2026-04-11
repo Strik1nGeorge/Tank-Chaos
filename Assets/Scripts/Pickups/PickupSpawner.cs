@@ -9,9 +9,9 @@ public class PickupSpawner : MonoBehaviour
 {
     public static PickupSpawner Instance { get; private set; }
 
-    private int   _maxActivePickups = 2;   // Max simultaneous pickups on map
-    private float _spawnIntervalMin = 15f; // Min seconds between spawns
-    private float _spawnIntervalMax = 20f; // Max seconds between spawns
+    private int   _maxActivePickups = 4;   // Max simultaneous pickups on map
+    private float _spawnIntervalMin = 30f; // Significantly lowered random spawn rate since we have enemy drops now
+    private float _spawnIntervalMax = 45f; // Max seconds between spawns
 
     private int   _activePickups = 0;
     private float _spawnTimer;
@@ -72,6 +72,18 @@ public class PickupSpawner : MonoBehaviour
         _spawnTimer = Random.Range(_spawnIntervalMin, _spawnIntervalMax);
     }
 
+    public void TryDropPickup(Vector2 position)
+    {
+        // 20% drop chance when an enemy dies
+        if (Random.value <= 0.20f)
+        {
+            if (GameManager.Instance == null || GameManager.Instance.CurrentLevel < 2) return;
+            
+            // Allow going over max active slightly if dropped by enemy
+            SpawnPickupAt(GameManager.Instance.CurrentLevel, position);
+        }
+    }
+
     private bool _spawnHealthNext = true;
 
     private void SpawnRandomPickup(int level)
@@ -83,8 +95,14 @@ public class PickupSpawner : MonoBehaviour
             return;
         }
 
+        SpawnPickupAt(level, spawnPos);
+    }
+
+    private void SpawnPickupAt(int level, Vector2 spawnPos)
+    {
+
         // Determine pickup type
-        // 0: Health, 1: DamageBoost, 2: Shield (Level 3+ only)
+        // 0: Health, 1: DamageBoost, 2: Laser (Level 3+ only)
         int pickupType = 0;
         
         if (level < 3)
@@ -94,10 +112,10 @@ public class PickupSpawner : MonoBehaviour
         }
         else
         {
-            // Level 3 random pool: 40% Health, 40% Damage, 20% Shield
+            // Level 3 random pool: 40% Health, 30% Damage, 30% Laser
             float rand = Random.value;
             if (rand < 0.4f) pickupType = 0;
-            else if (rand < 0.8f) pickupType = 1;
+            else if (rand < 0.7f) pickupType = 1;
             else pickupType = 2;
         }
         
@@ -115,8 +133,8 @@ public class PickupSpawner : MonoBehaviour
                 pickupColor = new Color(0.2f, 0.4f, 0.9f); // Blue
                 break;
             case 2:
-                pickupName = "ShieldPickup";
-                pickupColor = new Color(0.9f, 0.8f, 0.1f); // Yellow
+                pickupName = "LaserPickup";
+                pickupColor = new Color(0.2f, 0.9f, 0.9f); // Cyan
                 break;
         }
         
@@ -142,7 +160,7 @@ public class PickupSpawner : MonoBehaviour
         // Attach the appropriate pickup component
         if (pickupType == 0) go.AddComponent<HealthPickup>();
         else if (pickupType == 1) go.AddComponent<DamageBoostPickup>();
-        else if (pickupType == 2) go.AddComponent<ShieldPickup>();
+        else if (pickupType == 2) go.AddComponent<LaserPickup>();
 
         _activePickups++;
         Debug.Log($"[Pickup] Spawned {pickupName} at {spawnPos} (Active: {_activePickups})");

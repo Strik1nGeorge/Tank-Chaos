@@ -94,6 +94,9 @@ public abstract class EnemyBase : MonoBehaviour
         
         VfxManager.SpawnFloatingText(transform.position + Vector3.up * 0.5f, "+" + ScoreValue.ToString(), Color.yellow, 1.5f, 2.0f);
 
+        // Try to drop an item
+        PickupSpawner.Instance?.TryDropPickup(transform.position);
+
         // Notify spawner
         EnemySpawner.Instance?.OnEnemyDied(this);
 
@@ -121,7 +124,10 @@ public abstract class EnemyBase : MonoBehaviour
         if (bullet != null)
         {
             Vector2 dir = (targetPos - (Vector2)transform.position).normalized;
-            bullet.transform.position = transform.position + (Vector3)(dir * 0.6f);
+            
+            // Adjust the spawn offset based on the enemy's scale to ensure it spawns at the barrel tip
+            float spawnOffset = 0.65f * transform.localScale.x;
+            bullet.transform.position = transform.position + (Vector3)(dir * spawnOffset);
             
             Bullet b = bullet.GetComponent<Bullet>();
             b?.Init(dir, 8f, Damage, isPlayer: false); // isPlayer = false

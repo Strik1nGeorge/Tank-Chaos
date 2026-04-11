@@ -85,11 +85,15 @@ public class VfxManager : MonoBehaviour
         if (Instance == null) return;
 
         GameObject flashGO = new GameObject("MuzzleFlash");
-        flashGO.transform.position = position;
         // Align flash to barrel direction
         flashGO.transform.rotation = rotation;
+        
         float stretch = Random.Range(1.2f, 1.6f);
-        flashGO.transform.localScale = new Vector3(0.25f, 0.4f * stretch, 1f);
+        float flashHeight = 0.4f * stretch;
+        
+        // Offset the flash forward by half its height so the base of the fire starts exactly at the 'position' (barrel tip)
+        flashGO.transform.position = position + flashGO.transform.up * (flashHeight * 0.5f);
+        flashGO.transform.localScale = new Vector3(0.25f, flashHeight, 1f);
 
         SpriteRenderer sr = flashGO.AddComponent<SpriteRenderer>();
         sr.sprite = Instance._squareSprite;
@@ -98,8 +102,8 @@ public class VfxManager : MonoBehaviour
 
         // Flash fades very quickly (~3-4 frames)
         ParticleBehaviour pb = flashGO.AddComponent<ParticleBehaviour>();
-        // Move forward slightly
-        pb.Init(flashGO.transform.up * 2f, 10f, 0.06f);
+        // Move forward slightly, disable spinning for directional flashes
+        pb.Init(flashGO.transform.up * 2f, 10f, 0.06f, false);
     }
 
     /// <summary>

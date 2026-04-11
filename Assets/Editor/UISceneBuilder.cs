@@ -132,21 +132,21 @@ public class UISceneBuilder
         scRect.anchorMin = scRect.anchorMax = scRect.pivot = Vector2.zero;
         scRect.anchoredPosition = new Vector2(25, 25);
 
-        // Dash Slot
-        GameObject dashBorder = CreateImage(skillContainer.transform, "DashBorder", BottomLeft(104, 104, new Vector2(-2, -2)), new Color(0f, 0.5f, 1f, 0.4f));
-        GameObject dashBg = CreateImage(dashBorder.transform, "DashBg", Centered(new Vector2(100, 100)), new Color(0.08f, 0.08f, 0.1f, 0.95f));
-        CreateText(dashBg.transform, "KeyText", "[SHIFT]", 14, Color.gray, new Vector2(0, 30));
-        GameObject dashIcon = CreateText(dashBg.transform, "IconText", ">>", 28, new Color(0f, 0.8f, 1f), Vector2.zero);
-        dashIcon.GetComponent<Text>().fontStyle = FontStyle.Bold;
-        CreateText(dashBg.transform, "NameText", "DASH", 16, Color.white, new Vector2(0, -30));
+        // Sprint Slot
+        GameObject sprintBorder = CreateImage(skillContainer.transform, "SprintBorder", BottomLeft(104, 104, new Vector2(-2, -2)), new Color(0f, 0.5f, 1f, 0.4f));
+        GameObject sprintBg = CreateImage(sprintBorder.transform, "SprintBg", Centered(new Vector2(100, 100)), new Color(0.08f, 0.08f, 0.1f, 0.95f));
+        CreateText(sprintBg.transform, "KeyText", "[SHIFT]", 14, Color.gray, new Vector2(0, 30));
+        GameObject sprintIcon = CreateText(sprintBg.transform, "IconText", ">>", 28, new Color(0f, 0.8f, 1f), Vector2.zero);
+        sprintIcon.GetComponent<Text>().fontStyle = FontStyle.Bold;
+        CreateText(sprintBg.transform, "NameText", "SPRINT", 16, Color.white, new Vector2(0, -30));
 
-        GameObject dashMask = CreateImage(dashBg.transform, "DashMask", Fill(), new Color(0, 0, 0, 0.85f));
-        Image dashMaskImg = dashMask.GetComponent<Image>();
-        dashMaskImg.type = Image.Type.Filled;
-        dashMaskImg.fillMethod = Image.FillMethod.Radial360;
-        dashMaskImg.fillAmount = 0;
-        GameObject dashTimer = CreateText(dashMask.transform, "DashTimerText", "", 28, Color.white, Vector2.zero);
-        dashTimer.GetComponent<Text>().fontStyle = FontStyle.Bold;
+        GameObject sprintMask = CreateImage(sprintBg.transform, "SprintMask", Fill(), new Color(0, 0, 0, 0.85f));
+        Image sprintMaskImg = sprintMask.GetComponent<Image>();
+        sprintMaskImg.type = Image.Type.Filled;
+        sprintMaskImg.fillMethod = Image.FillMethod.Radial360;
+        sprintMaskImg.fillAmount = 0;
+        GameObject sprintTimer = CreateText(sprintMask.transform, "SprintTimerText", "", 28, Color.white, Vector2.zero);
+        sprintTimer.GetComponent<Text>().fontStyle = FontStyle.Bold;
 
         // Weapon Slot
         GameObject weaponBorder = CreateImage(skillContainer.transform, "WeaponBorder", BottomLeft(124, 104, new Vector2(118, -2)), new Color(1f, 0.6f, 0f, 0.4f));
@@ -174,19 +174,40 @@ public class UISceneBuilder
         CreateImage(msgPanel.transform, "Background", Fill(), new Color(0, 0, 0, 0.85f));
         
         // Text elements (positioned top to bottom with more spacing)
-        CreateText(msgPanel.transform, "TitleText", "MESSAGE", 80, Color.white, new Vector2(0, 320));
-        CreateText(msgPanel.transform, "SubtitleText", "", 30, Color.yellow, new Vector2(0, 240));
-        CreateText(msgPanel.transform, "BodyText", "", 22, new Color(0.85f, 0.85f, 0.85f), new Vector2(0, 120));
+        CreateText(msgPanel.transform, "TitleText", "MESSAGE", 80, Color.white, new Vector2(0, 350));
+        CreateText(msgPanel.transform, "SubtitleText", "", 40, Color.yellow, new Vector2(0, 270));
+
+        // Body text designed to grow downwards without overlapping buttons
+        GameObject bodyText = CreateText(msgPanel.transform, "BodyText", "", 24, new Color(0.85f, 0.85f, 0.85f), new Vector2(0, 50));
+        bodyText.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 300);
+        bodyText.GetComponent<Text>().alignment = TextAnchor.UpperCenter;
 
         // Victory-specific interaction area (Input + Save)
-        CreateInputField(msgPanel.transform, "NameInput", "ENTER YOUR NAME...", new Vector2(0, -30), new Vector2(400, 55));
-        CreateButton(msgPanel.transform, "SaveBtn", "SAVE PERFORMANCE", new Vector2(0, -95), new Vector2(400, 55), new Color(0.1f, 0.4f, 0.15f));
+        CreateInputField(msgPanel.transform, "NameInput", "ENTER YOUR NAME...", new Vector2(0, -60), new Vector2(400, 55));
+        CreateButton(msgPanel.transform, "SaveBtn", "SAVE PERFORMANCE", new Vector2(0, -130), new Vector2(400, 55), new Color(0.1f, 0.4f, 0.15f));
 
-        // Bottom flow buttons
-        CreateButton(msgPanel.transform, "NextLevelBtn", "NEXT LEVEL", new Vector2(0, -165), new Vector2(360, 55), new Color(0.15f, 0.5f, 0.2f));
-        CreateButton(msgPanel.transform, "RetryBtn", "TRY AGAIN", new Vector2(0, -165), new Vector2(360, 55), new Color(0.3f, 0.35f, 0.5f));
-        CreateButton(msgPanel.transform, "RestartBtn", "MAIN MENU", new Vector2(0, -230), new Vector2(360, 55), new Color(0.25f, 0.25f, 0.3f));
-        CreateButton(msgPanel.transform, "QuitBtn", "QUIT TO DESKTOP", new Vector2(0, -300), new Vector2(360, 55), new Color(0.5f, 0.15f, 0.15f));
+        // Bottom flow buttons — placed in a VerticalLayoutGroup so hidden buttons
+        // don't leave gaps in the layout.
+        GameObject btnContainer = CreateEmpty(msgPanel.transform, "ButtonContainer");
+        RectTransform bcRect = btnContainer.GetComponent<RectTransform>();
+        bcRect.anchorMin = new Vector2(0.5f, 0.5f);
+        bcRect.anchorMax = new Vector2(0.5f, 0.5f);
+        bcRect.pivot = new Vector2(0.5f, 1f); // Pivot at the top
+        bcRect.anchoredPosition = new Vector2(0, -190); // Start safely below the Save button (-130)
+        bcRect.sizeDelta = new Vector2(400, 300);
+
+        var vlg2 = btnContainer.AddComponent<VerticalLayoutGroup>();
+        vlg2.childAlignment = TextAnchor.UpperCenter;
+        vlg2.spacing = 10;
+        vlg2.childControlWidth = true;
+        vlg2.childControlHeight = false;
+        vlg2.childForceExpandWidth = true;
+        vlg2.childForceExpandHeight = false;
+
+        CreateButton(btnContainer.transform, "NextLevelBtn", "NEXT LEVEL", Vector2.zero, new Vector2(360, 55), new Color(0.15f, 0.5f, 0.2f));
+        CreateButton(btnContainer.transform, "RetryBtn", "TRY AGAIN", Vector2.zero, new Vector2(360, 55), new Color(0.3f, 0.35f, 0.5f));
+        CreateButton(btnContainer.transform, "RestartBtn", "MAIN MENU", Vector2.zero, new Vector2(360, 55), new Color(0.25f, 0.25f, 0.3f));
+        CreateButton(btnContainer.transform, "QuitBtn", "QUIT TO DESKTOP", Vector2.zero, new Vector2(360, 55), new Color(0.5f, 0.15f, 0.15f));
 
         msgPanel.SetActive(false);
 
@@ -277,10 +298,28 @@ public class UISceneBuilder
         GameObject previewRoot = CreateEmpty(garagePanel.transform, "TankPreview");
         previewRoot.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 150);
 
-        CreateImage(previewRoot.transform, "Body", Centered(new Vector2(100, 100)), Color.blue);
-        CreateImage(previewRoot.transform, "TrackL", Centered(new Vector2(20, 110), new Vector2(-45, 0)), Color.gray);
-        CreateImage(previewRoot.transform, "TrackR", Centered(new Vector2(20, 110), new Vector2(45, 0)), Color.gray);
-        CreateImage(previewRoot.transform, "Barrel", Centered(new Vector2(20, 50), new Vector2(0, 40)), Color.gray);
+        // Tank preview (Hierarchy order = Rendering order in UI)
+        // 1. Tracks (Bottom layer)
+        CreateImage(previewRoot.transform, "TrackL", Centered(new Vector2(20, 115), new Vector2(-45, 0)), new Color(0.2f, 0.2f, 0.2f));
+        CreateImage(previewRoot.transform, "TrackR", Centered(new Vector2(20, 115), new Vector2(45, 0)), new Color(0.2f, 0.2f, 0.2f));
+        
+        // 2. Base Hull
+        CreateImage(previewRoot.transform, "Body", Centered(new Vector2(100, 100)), new Color(0.2f, 0.5f, 0.8f));
+        
+        // 3. Inner Armor Plate
+        CreateImage(previewRoot.transform, "ArmorPlate", Centered(new Vector2(80, 80)), new Color(1f, 1f, 1f, 0.15f));
+        
+        // 4. Engine Vent
+        CreateImage(previewRoot.transform, "EngineVent", Centered(new Vector2(50, 15), new Vector2(0, -35)), new Color(0.15f, 0.15f, 0.15f));
+        
+        // 5. Main Gun Barrel
+        CreateImage(previewRoot.transform, "Barrel", Centered(new Vector2(18, 60), new Vector2(0, 40)), new Color(0.35f, 0.35f, 0.35f));
+        
+        // 6. Turret Base
+        CreateImage(previewRoot.transform, "Turret", Centered(new Vector2(50, 50), new Vector2(0, -5)), new Color(0f, 0f, 0f, 0.2f));
+        
+        // 7. Turret Hatch
+        CreateImage(previewRoot.transform, "Hatch", Centered(new Vector2(25, 25), new Vector2(0, -5)), new Color(0.1f, 0.1f, 0.1f));
 
         // Palette row labels (buttons generated at runtime)
         CreateText(garagePanel.transform, "BodyLabel", "BODY COLOR", 30, Color.gray, new Vector2(-300, -50));

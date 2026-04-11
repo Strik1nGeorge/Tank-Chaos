@@ -39,7 +39,11 @@ public class BasicEnemy : EnemyBase
         // Fire at player when in range and has line of sight
         if (_ai.DistanceToPlayer <= _ai.AttackRange && _ai.HasLineOfSight)
         {
-            if (_fireCooldown <= 0f)
+            // NEW: Only fire if we are roughly aimed at the player (within 10 degrees)
+            Vector2 toPlayer = ((Vector2)_player.position - (Vector2)transform.position).normalized;
+            float angleToPlayer = Vector2.Angle(transform.up, toPlayer);
+
+            if (_fireCooldown <= 0f && angleToPlayer < 10f)
             {
                 FireBulletAt(_player.position, Color.red);
                 _fireCooldown = FIRE_RATE;
@@ -64,21 +68,21 @@ public class BasicEnemy : EnemyBase
             _rb.velocity = Vector2.zero;
         }
 
-        // If in range and can see player, face the player (aiming/strafing).
-        // Otherwise, face the movement direction.
+        // Determine target direction: face player if in range+LOS, otherwise face move direction
+        Vector2 targetFaceDir = moveDir;
         if (_ai.DistanceToPlayer <= _ai.AttackRange && _ai.HasLineOfSight)
         {
-            Vector2 faceDir = ((Vector2)_player.position - (Vector2)transform.position).normalized;
-            if (faceDir.sqrMagnitude > 0.01f)
-            {
-                float angle = Mathf.Atan2(faceDir.y, faceDir.x) * Mathf.Rad2Deg - 90f;
-                transform.rotation = Quaternion.Euler(0f, 0f, angle);
-            }
+            targetFaceDir = ((Vector2)_player.position - (Vector2)transform.position).normalized;
         }
-        else if (moveDir != Vector2.zero)
+
+        if (targetFaceDir.sqrMagnitude > 0.01f)
         {
-            float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg - 90f;
-            transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            float targetAngle = Mathf.Atan2(targetFaceDir.y, targetFaceDir.x) * Mathf.Rad2Deg - 90f;
+            Quaternion targetRot = Quaternion.Euler(0f, 0f, targetAngle);
+            
+            // NEW: Smoothly rotate toward target rotation instead of snapping
+            float turnSpeed = 240f; // degrees per second
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, turnSpeed * Time.deltaTime);
         }
     }
 }

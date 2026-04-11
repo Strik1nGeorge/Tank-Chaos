@@ -14,7 +14,10 @@ public class Bullet : MonoBehaviour
     private float   _speed;
     private int     _damage;
     private bool    _isPlayer;
+    private bool    _isShotgun;
+    private bool    _isLaser;
     private float   _lifetimeTimer;
+    private float   _distanceTraveled;
 
     private Rigidbody2D    _rb;
     private SpriteRenderer _sr;
@@ -31,8 +34,50 @@ public class Bullet : MonoBehaviour
     private void Update()
     {
         _lifetimeTimer -= Time.deltaTime;
+
+        if (_isPlayer && !_isShotgun)
+        {
+            _distanceTraveled += _speed * Time.deltaTime;
+            // Laser has same distance limit, or maybe slightly longer? 21f is map diagonal, perfectly fine.
+            if (_distanceTraveled >= 21f)
+            {
+                Dissipate();
+                return;
+            }
+        }
+
         if (_lifetimeTimer <= 0f)
-            ReturnToPool();
+            Dissipate();
+    }
+
+    private void FixedUpdate()
+    {
+        // Laser is long enough that it rarely tunnels; skipping check for performance.
+        if (_isLaser || _rb == null) return;
+
+        // Predictive Collision Check (Anti-Tunneling)
+        // Check slightly ahead of the bullet's current trajectory
+        float castDist = _speed * Time.fixedDeltaTime + 0.15f; 
+        int wallMask = LayerMask.GetMask("Default");
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, _direction, castDist, wallMask);
+        if (hit.collider != null && hit.collider.CompareTag("Wall"))
+        {
+            // We caught the bullet before it swept past the wall
+            transform.position = hit.point;
+            OnTriggerEnter2D(hit.collider);
+        }
+    }
+
+    private void Dissipate()
+    {
+        // Spawn a small poof of particles matching the bullet's color to show it ran out of energy
+        Color puffColor = _sr != null ? _sr.color : Color.gray;
+        // Dim the color slightly for dissipation
+        puffColor.a = 0.6f; 
+        VfxManager.SpawnExplosion(transform.position, puffColor, 3);
+        
+        ReturnToPool();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -47,10 +92,31 @@ public class Bullet : MonoBehaviour
                 wall.TakeDamage(_damage);
                 AudioManager.Instance?.PlayExplosionSound();
                 VfxManager.SpawnExplosion(transform.position, Color.gray, 5);
-                // Optional camera shake (disabled)
-                // CameraShake.TriggerShake(0.1f, 0.1f);
+                if (!_isLaser) ReturnToPool();
+                return;
             }
-            ReturnToPool();
+
+            // Indestructible Wall
+            if (_isLaser)
+            {
+                // Laser pierces straight through indestructible walls, do nothing!
+                return;
+            }
+            else if (_isPlayer && !_isShotgun)
+            {
+                // Approximate the normal of the 1x1 block
+                Vector2 diff = transform.position - other.transform.position;
+                Vector2 normal = Mathf.Abs(diff.x) > Mathf.Abs(diff.y) 
+                    ? new Vector2(Mathf.Sign(diff.x), 0) 
+                    : new Vector2(0, Mathf.Sign(diff.y));
+
+                _direction = Vector2.Reflect(_direction, normal).normalized;
+                _rb.velocity = _direction * _speed;
+            }
+            else
+            {
+                ReturnToPool();
+            }
             return;
         }
 
@@ -63,7 +129,7 @@ public class Bullet : MonoBehaviour
                 enemy.TakeDamage(_damage);
                 AudioManager.Instance?.PlayExplosionSound();
                 VfxManager.SpawnExplosion(enemy.transform.position, new Color(1f, 0.3f, 0.3f), 8);
-                ReturnToPool();
+                if (!_isLaser) ReturnToPool();
             }
         }
         else
@@ -92,13 +158,16 @@ public class Bullet : MonoBehaviour
     /// <summary>
     /// Initialize bullet with direction, speed, damage, and ownership.
     /// </summary>
-    public void Init(Vector2 direction, float speed, int damage, bool isPlayer, float maxLifetime = DEFAULT_LIFETIME, bool isShotgun = false)
+    public void Init(Vector2 direction, float speed, int damage, bool isPlayer, float maxLifetime = DEFAULT_LIFETIME, bool isShotgun = false, bool isLaser = false)
     {
         _direction     = direction.normalized;
         _speed         = speed;
         _damage        = damage;
         _isPlayer      = isPlayer;
+        _isShotgun     = isShotgun;
+        _isLaser       = isLaser;
         _lifetimeTimer = maxLifetime;
+        _distanceTraveled = 0f;
 
         // Set collision layer based on ownership
         int layer = isPlayer ? LayerMask.NameToLayer("PlayerBullet") : LayerMask.NameToLayer("EnemyBullet");
@@ -109,11 +178,29 @@ public class Bullet : MonoBehaviour
         {
             if (isPlayer)
             {
-                if (isShotgun)
+                if (_isLaser)
                 {
-                    // Shotgun pellet: small orange
-                    _sr.color = new Color(1f, 0.4f, 0f);
-                    transform.localScale = _originalScale * 0.5f;
+                    // Laser bullet: Cyan and long
+                    _sr.color = new Color(0.2f, 0.9f, 0.9f);
+                    transform.localScale = new Vector3(_originalScale.x * 0.4f, _originalScale.y * 3.5f, _originalScale.z);
+                    // Match rotation to direction so it looks like a laser beam
+                    float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
+                    transform.rotation = Quaternion.Euler(0, 0, angle - 90f); // -90 because sprite default is up
+                }
+                else if (isShotgun)
+                {
+                    if (damage > 1)
+                    {
+                        // Boosted shotgun pellet: orange-red, slightly bigger
+                        _sr.color = new Color(1f, 0.3f, 0f);
+                        transform.localScale = _originalScale * 0.7f;
+                    }
+                    else
+                    {
+                        // Normal shotgun pellet: small black
+                        _sr.color = new Color(0.1f, 0.1f, 0.1f);
+                        transform.localScale = _originalScale * 0.5f;
+                    }
                 }
                 else if (damage > 1)
                 {
@@ -123,8 +210,8 @@ public class Bullet : MonoBehaviour
                 }
                 else
                 {
-                    // Normal player bullet: yellow
-                    _sr.color = new Color(1f, 0.9f, 0.1f);
+                    // Normal player bullet: black cannonball
+                    _sr.color = new Color(0.1f, 0.1f, 0.1f);
                     transform.localScale = _originalScale;
                 }
             }

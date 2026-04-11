@@ -10,17 +10,19 @@ public class ParticleBehaviour : MonoBehaviour
     private float _lifeTime;
     private float _timer;
     private Vector3 _initialScale;
+    private bool _spin;
 
     /// <summary>
     /// Initialize the particle with velocity, damping, and lifetime.
     /// </summary>
-    public void Init(Vector2 initialVelocity, float damping, float lifeTime)
+    public void Init(Vector2 initialVelocity, float damping, float lifeTime, bool spin = true)
     {
         _velocity = initialVelocity;
         _damping = damping;
         _lifeTime = lifeTime;
         _timer = lifeTime;
         _initialScale = transform.localScale;
+        _spin = spin;
     }
 
     private void Update()
@@ -31,8 +33,8 @@ public class ParticleBehaviour : MonoBehaviour
         // Damp velocity over time
         _velocity = Vector2.Lerp(_velocity, Vector2.zero, _damping * Time.deltaTime);
 
-        // Spin for visual effect
-        transform.Rotate(0, 0, 360f * Time.deltaTime);
+        // Spin for visual effect if enabled
+        if (_spin) transform.Rotate(0, 0, 360f * Time.deltaTime);
 
         // Shrink over lifetime (reaches zero at end)
         _timer -= Time.deltaTime;

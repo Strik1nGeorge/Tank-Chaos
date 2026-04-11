@@ -51,6 +51,69 @@ public class MapGenerator : MonoBehaviour
         PlaceInternalObstacles();
     }
 
+    /// <summary>
+    /// Generate the Boss Arena — a fixed symmetric map with wide corridors
+    /// and only 8 symmetric indestructible pillars so the Boss never gets wedged.
+    /// Layout (. = floor, X = indestructible wall, ~ = boundary):
+    ///   Wide open centre, 4-cell L-pillar groups near each quadrant midpoint.
+    /// </summary>
+    public void GenerateBossArena()
+    {
+        DestroyExistingMap();
+        CreateMapRoot();
+        Debug.Log("[MapGen] Generating Boss Arena (fixed symmetric layout)");
+
+        PlaceFloor();
+        PlaceBoundaryWalls();
+
+        // 4-tile pillar positions — symmetric around the map centre (11, 11).
+        // Each pillar is a 2×2 block of indestructible wall tiles.
+        // Pillar centres: offsets ±5 in both axes from centre.
+        int[,] pillarTopLeft =
+        {
+            { 5,  5  }, // top-left quadrant
+            { 5,  16 }, // top-right quadrant
+            { 16, 5  }, // bottom-left quadrant
+            { 16, 16 }, // bottom-right quadrant
+        };
+
+        for (int p = 0; p < pillarTopLeft.GetLength(0); p++)
+        {
+            int baseR = pillarTopLeft[p, 0];
+            int baseC = pillarTopLeft[p, 1];
+            for (int dr = 0; dr < 2; dr++)
+                for (int dc = 0; dc < 2; dc++)
+                    SpawnTile("Obstacle", baseR + dr, baseC + dc, true, Color.white, 0f, TileType.Brick);
+        }
+
+        // 4 single indestructible walls along each axis, giving cover spots
+        // but no narrow corridors that can trap the Boss.
+        int[,] singleWalls =
+        {
+            // Horizontal mid-axis blockers (left & right of centre)
+            { 11, 5  },
+            { 11, 17 },
+            // Vertical mid-axis blockers (above & below centre)
+            { 5,  11 },
+            { 17, 11 },
+        };
+
+        for (int i = 0; i < singleWalls.GetLength(0); i++)
+            SpawnTile("Obstacle", singleWalls[i, 0], singleWalls[i, 1], true, Color.white, 0f, TileType.Brick);
+
+        // A ring of destructible cover scattered symmetrically around mid-ring
+        int[,] destructibles =
+        {
+            { 7,  8  }, { 7,  14 },
+            { 15, 8  }, { 15, 14 },
+            { 8,  7  }, { 8,  15 },
+            { 14, 7  }, { 14, 15 },
+        };
+
+        for (int i = 0; i < destructibles.GetLength(0); i++)
+            SpawnTile("Destructible", destructibles[i, 0], destructibles[i, 1], true, Color.white, 0f, TileType.Cracked);
+    }
+
     // --- Map construction helpers ---
 
     private void DestroyExistingMap()
