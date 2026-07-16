@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Spawns pickups at random empty positions on the map.
-/// Alternates between health and damage-boost pickups.
+/// Spawns level-appropriate pickups at random empty positions on the map.
+/// Level 3 adds the laser pickup to the random pool.
 /// Builds sprites procedurally — no Inspector assets needed.
 /// </summary>
 public class PickupSpawner : MonoBehaviour

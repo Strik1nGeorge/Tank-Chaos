@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Damage-boost pickup: doubles player damage for 5 seconds.
+/// Damage-boost pickup: increases cannon damage to x3 for 5 seconds.
 /// </summary>
 public class DamageBoostPickup : PickupBase
 {

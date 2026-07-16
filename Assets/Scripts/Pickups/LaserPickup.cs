@@ -7,7 +7,7 @@ public class LaserPickup : PickupBase
 {
     protected override void ApplyEffect(PlayerHealth health, PlayerController controller)
     {
-        // Grant a 10-second laser weapon
+        // Grant a 5-second laser weapon
         controller.ActivateLaser(5f);
     }
 }

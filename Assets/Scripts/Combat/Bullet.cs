@@ -8,6 +8,7 @@ public class Bullet : MonoBehaviour
 {
     // --- Constants ---
     private const float DEFAULT_LIFETIME = 3f; 
+    private const float WALL_BOUNCE_COOLDOWN = 0.05f;
 
     // --- Instance State ---
     private Vector2 _direction;
@@ -18,15 +19,19 @@ public class Bullet : MonoBehaviour
     private bool    _isLaser;
     private float   _lifetimeTimer;
     private float   _distanceTraveled;
+    private float   _wallBounceCooldown;
 
-    private Rigidbody2D    _rb;
-    private SpriteRenderer _sr;
-    private Vector3        _originalScale;
+    private Rigidbody2D      _rb;
+    private CircleCollider2D _circleCollider;
+    private Collider2D       _lastBouncedWall;
+    private SpriteRenderer   _sr;
+    private Vector3          _originalScale;
 
     // --- Unity Lifecycle ---
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _circleCollider = GetComponent<CircleCollider2D>();
         _sr = GetComponent<SpriteRenderer>();
         _originalScale = transform.localScale;
     }
@@ -52,20 +57,31 @@ public class Bullet : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Laser is long enough that it rarely tunnels; skipping check for performance.
-        if (_isLaser || _rb == null) return;
+        if (_wallBounceCooldown > 0f)
+        {
+            _wallBounceCooldown -= Time.fixedDeltaTime;
+            if (_wallBounceCooldown <= 0f)
+                _lastBouncedWall = null;
+        }
 
-        // Predictive Collision Check (Anti-Tunneling)
-        // Check slightly ahead of the bullet's current trajectory
+        // Laser is long enough that it rarely tunnels; skipping check for performance.
+        if (_isLaser || _rb == null || _wallBounceCooldown > 0f) return;
+
+        // Predictive collision check (anti-tunneling).
+        // Cast the bullet's actual circle so the returned centroid and normal
+        // describe a valid contact position instead of embedding it in the wall.
         float castDist = _speed * Time.fixedDeltaTime + 0.15f; 
         int wallMask = LayerMask.GetMask("Default");
+        float radius = _circleCollider != null
+            ? Mathf.Max(_circleCollider.bounds.extents.x, _circleCollider.bounds.extents.y)
+            : 0f;
 
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, _direction, castDist, wallMask);
-        if (hit.collider != null && hit.collider.CompareTag("Wall"))
+        RaycastHit2D hit = Physics2D.CircleCast(_rb.position, radius, _direction, castDist, wallMask);
+        if (hit.collider != null &&
+            hit.collider.CompareTag("Wall") &&
+            Vector2.Dot(_direction, hit.normal) < 0f)
         {
-            // We caught the bullet before it swept past the wall
-            transform.position = hit.point;
-            OnTriggerEnter2D(hit.collider);
+            HandleWallCollision(hit.collider, hit.normal, hit.centroid);
         }
     }
 
@@ -80,43 +96,67 @@ public class Bullet : MonoBehaviour
         ReturnToPool();
     }
 
+    private void HandleWallCollision(Collider2D other, Vector2 normal, Vector2 bulletCenter)
+    {
+        // Check for destructible wall
+        DestructibleWall wall = other.GetComponent<DestructibleWall>();
+        if (wall != null)
+        {
+            wall.TakeDamage(_damage);
+            AudioManager.Instance?.PlayExplosionSound();
+            VfxManager.SpawnExplosion(transform.position, Color.gray, 5);
+            if (!_isLaser) ReturnToPool();
+            return;
+        }
+
+        // Laser pierces straight through indestructible walls.
+        if (_isLaser) return;
+
+        if (_isPlayer && !_isShotgun)
+        {
+            // The predictive cast and Unity trigger can report the same wall on
+            // adjacent physics steps while the bullet is still touching it.
+            if (other == _lastBouncedWall && _wallBounceCooldown > 0f)
+                return;
+
+            if (normal.sqrMagnitude < 0.0001f)
+                normal = -_direction;
+
+            normal.Normalize();
+            if (Vector2.Dot(_direction, normal) > 0f)
+                normal = -normal;
+
+            // Keep the collider just outside the wall so the same impact is not
+            // delivered again as a trigger and reflected a second time.
+            _rb.position = bulletCenter + normal * 0.01f;
+            _direction = Vector2.Reflect(_direction, normal).normalized;
+            _rb.velocity = _direction * _speed;
+            _lastBouncedWall = other;
+            _wallBounceCooldown = WALL_BOUNCE_COOLDOWN;
+        }
+        else
+        {
+            ReturnToPool();
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         // Wall collision
         if (other.CompareTag("Wall"))
         {
-            // Check for destructible wall
-            DestructibleWall wall = other.GetComponent<DestructibleWall>();
-            if (wall != null)
-            {
-                wall.TakeDamage(_damage);
-                AudioManager.Instance?.PlayExplosionSound();
-                VfxManager.SpawnExplosion(transform.position, Color.gray, 5);
-                if (!_isLaser) ReturnToPool();
-                return;
-            }
+            Vector2 center = _rb != null ? _rb.position : (Vector2)transform.position;
+            Vector2 closestPoint = other.ClosestPoint(center);
+            Vector2 normal = center - closestPoint;
+            if (normal.sqrMagnitude < 0.0001f)
+                normal = -_direction;
 
-            // Indestructible Wall
-            if (_isLaser)
-            {
-                // Laser pierces straight through indestructible walls, do nothing!
-                return;
-            }
-            else if (_isPlayer && !_isShotgun)
-            {
-                // Approximate the normal of the 1x1 block
-                Vector2 diff = transform.position - other.transform.position;
-                Vector2 normal = Mathf.Abs(diff.x) > Mathf.Abs(diff.y) 
-                    ? new Vector2(Mathf.Sign(diff.x), 0) 
-                    : new Vector2(0, Mathf.Sign(diff.y));
+            float radius = _circleCollider != null
+                ? Mathf.Max(_circleCollider.bounds.extents.x, _circleCollider.bounds.extents.y)
+                : 0f;
+            Vector2 bulletCenter = closestPoint + normal.normalized * radius;
 
-                _direction = Vector2.Reflect(_direction, normal).normalized;
-                _rb.velocity = _direction * _speed;
-            }
-            else
-            {
-                ReturnToPool();
-            }
+            HandleWallCollision(other, normal, bulletCenter);
             return;
         }
 
@@ -168,6 +208,8 @@ public class Bullet : MonoBehaviour
         _isLaser       = isLaser;
         _lifetimeTimer = maxLifetime;
         _distanceTraveled = 0f;
+        _lastBouncedWall = null;
+        _wallBounceCooldown = 0f;
 
         // Set collision layer based on ownership
         int layer = isPlayer ? LayerMask.NameToLayer("PlayerBullet") : LayerMask.NameToLayer("EnemyBullet");
@@ -232,6 +274,8 @@ public class Bullet : MonoBehaviour
     private void ReturnToPool()
     {
         if (_rb != null) _rb.velocity = Vector2.zero;
+        _lastBouncedWall = null;
+        _wallBounceCooldown = 0f;
         BulletPool.Instance?.Return(gameObject);
     }
 }
