@@ -1,17 +1,59 @@
-# TankChaos 2D
-
-English | [简体中文](README.zh-CN.md)
+<p align="center">
+  <img src="docs/images/tank-chaos-icon.svg" width="112" height="112" alt="TankChaos green tank icon">
+</p>
+<h1 align="center">TankChaos 2D</h1>
+<p align="center"><strong>Ricochet shots. Switch weapons. Take down the Titan.</strong></p>
+<p align="center">
+  <a href="#development"><img src="https://img.shields.io/badge/Unity-2022.3_LTS-222c36?logo=unity&amp;logoColor=white" alt="Unity 2022.3 LTS"></a>
+  <img src="https://img.shields.io/badge/Language-C%23-4f9155" alt="Language: C#">
+  <a href="https://github.com/Strik1nGeorge/Tank-Chaos/releases/latest"><img src="https://img.shields.io/badge/Windows-x64-2879bc" alt="Windows x64"></a>
+  <a href="https://github.com/Strik1nGeorge/Tank-Chaos/releases/tag/v1.0.1"><img src="https://img.shields.io/badge/Release-v1.0.1-3aa564" alt="Release v1.0.1"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/Strik1nGeorge/Tank-Chaos/releases/latest"><strong>Download for Windows</strong></a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#controls">Controls</a> ·
+  <a href="#development">Build from source</a>
+</p>
+<p align="center">English | <a href="README.zh-CN.md">简体中文</a></p>
 
 TankChaos 2D is a top-down arcade tank shooter built with Unity 2022.3 LTS.
 Fight through three progressively harder stages, switch between cannon and
 shotgun fire, collect temporary upgrades, customize your tank, and defeat a
 three-phase boss.
 
-Current version: **1.0.1**
+<a id="screenshots"></a>
 
-[Download the latest Windows release](https://github.com/GeorgeNum7/Tank-Chaos/releases/latest)
+## Screenshots
 
-## v1.0.1 highlights
+| The Proving Grounds | Shotgun combat |
+|:---:|:---:|
+| <a href="docs/images/gameplay.png"><img src="docs/images/gameplay.png" width="420" alt="The green player tank faces red enemies in a brick-and-crate arena"></a> | <a href="docs/images/combat.png"><img src="docs/images/combat.png" width="420" alt="Three shotgun pellets fly from the player tank during a fight"></a> |
+| **Main menu** | **Make it your own** |
+| <a href="docs/images/main-menu.png"><img src="docs/images/main-menu.png" width="420" alt="TankChaos main menu with Start Game, Garage, Leaderboards, How to Play, Settings, and Quit"></a> | <a href="docs/images/garage.png"><img src="docs/images/garage.png" width="420" alt="Garage with a tank preview and separate body, tracks, and barrel color palettes"></a> |
+
+*Captured in the Windows v1.0.1 release. Click an image to view it at full size.*
+
+## Play now
+
+1. [Download the latest Windows release](https://github.com/Strik1nGeorge/Tank-Chaos/releases/latest).
+2. Extract the entire ZIP archive.
+3. Launch `TankChaos_2D.exe`, choose **Start Game**, and enter **The Proving Grounds**.
+
+Keep the executable and its companion folders together. Unity is only needed
+when opening or building the source project.
+
+- **Three stages, one final boss** — work up from basic enemies to the Titan's
+  three combat phases.
+- **Change your approach** — ricochet cannon shots off solid walls, switch to a
+  close-range shotgun, or collect the level-3 piercing laser.
+- **A fresh arena each run** — use destructible and indestructible cover while
+  collecting health and damage upgrades.
+- **Your tank, your progress** — customize three tank colors and keep local
+  unlocks, settings, and leaderboards between sessions.
+
+<details>
+<summary><strong>What's new in v1.0.1</strong></summary>
 
 - Added a temporary piercing laser weapon and a new level-3 pickup pool.
 - Added background-music loading, track switching, and new music.
@@ -20,11 +62,15 @@ Current version: **1.0.1**
 - Normal cannon rounds now ricochet cleanly from indestructible walls.
 - Fixed missing release source files and aligned the project version with 1.0.1.
 
+</details>
+
 ## Gameplay
 
 Move through a 23 × 23 arena, destroy the current enemy roster before time runs
 out, collect dropped upgrades, and unlock the next level. Progress, settings,
 tank colors, and local leaderboard entries persist between sessions.
+
+<a id="controls"></a>
 
 ### Controls
 
@@ -37,6 +83,9 @@ tank colors, and local leaderboard entries persist between sessions.
 | Hold `Left Shift` | Sprint while stamina is available |
 | `Space` | Pause or resume |
 
+<details>
+<summary><strong>Weapons, levels, boss phases & pickups</strong></summary>
+
 ### Weapons and projectile behavior
 
 | Weapon | Behavior |
@@ -48,7 +97,9 @@ tank colors, and local leaderboard entries persist between sessions.
 Enemy projectiles disappear when they hit walls. Destructible walls are removed
 by any damaging projectile.
 
-## Levels
+### Levels
+
+<p align="center"><a href="docs/images/level-select.png"><img src="docs/images/level-select.png" width="560" alt="Level selection with The Proving Grounds unlocked and the next two stages locked"></a></p>
 
 | Level | Name | Configuration |
 |---|---|---|
@@ -59,7 +110,7 @@ by any damaging projectile.
 Levels unlock sequentially. Completing a stage records score and clear time in
 its local leaderboard.
 
-## The Titan
+### The Titan
 
 The Titan has **45 HP** and changes behavior as its health falls.
 
@@ -72,7 +123,7 @@ The Titan has **45 HP** and changes behavior as its health falls.
 Phase changes update the boss HUD, trigger visual feedback, and can bring in
 additional enemies.
 
-## Pickups
+### Pickups
 
 Pickups begin appearing from level 2. Defeated enemies also have a 20% chance to
 drop one.
@@ -86,7 +137,16 @@ drop one.
 The player starts with **5 HP**, **3 lives**, and 1.5 seconds of invincibility
 after taking damage.
 
-## Main systems
+</details>
+
+<a id="development"></a>
+
+## Development
+
+<details>
+<summary><strong>Requirements, source setup, Windows builds & architecture</strong></summary>
+
+### Main systems
 
 - **State-driven game flow:** main menu, level selection, playing, paused,
   victory, and game-over states are coordinated by `GameManager`.
@@ -107,7 +167,7 @@ after taking damage.
 - **Editor utilities:** project setup, prefab generation, and UI-scene rebuilding
   are available from `Tools > Game Tools`.
 
-## Requirements
+### Requirements
 
 - Unity **2022.3.62f3 LTS** is recommended.
 - Windows Build Support is required to create the Windows player.
@@ -115,10 +175,10 @@ after taking damage.
   Unity registry packages listed in `Packages/manifest.json`.
 - No external third-party runtime package is required.
 
-## Run from source
+### Run from source
 
 ```powershell
-git clone https://github.com/GeorgeNum7/Tank-Chaos.git
+git clone https://github.com/Strik1nGeorge/Tank-Chaos.git
 cd Tank-Chaos
 ```
 
@@ -131,7 +191,7 @@ cd Tank-Chaos
 `MainGame.unity` is the active scene. `GameScene.unity` remains in the repository
 but is disabled in Build Settings.
 
-### Rebuild generated content
+#### Rebuild generated content
 
 The editor tools are optional and should only be used when the corresponding
 scene or prefab content needs to be regenerated:
@@ -145,9 +205,9 @@ Tools > Game Tools > [REBUILD FULL PROJECT]
 
 Commit or back up scene changes before running the full rebuild command.
 
-## Build a Windows player
+### Build a Windows player
 
-### Unity editor
+#### Unity editor
 
 1. Open `File > Build Settings`.
 2. Confirm only `Assets/Scenes/MainGame.unity` is enabled.
@@ -159,7 +219,7 @@ Keep the executable, `TankChaos_2D_Data`, `UnityPlayer.dll`,
 `UnityCrashHandler64.exe`, and `MonoBleedingEdge` together when distributing the
 game.
 
-### Command line
+#### Command line
 
 ```powershell
 & "<UnityEditorPath>\Unity.exe" `
@@ -172,7 +232,7 @@ game.
 
 Change the project and output paths to match your machine.
 
-## Project structure
+### Project structure
 
 ```text
 Assets/
@@ -197,7 +257,7 @@ Assets/
     └── VFX/                # Particles, camera shake, shadows, floating text
 ```
 
-## Architecture notes
+### Architecture notes
 
 - `GameManager` owns the high-level state machine and level transitions.
 - `GameBootstrapper` locates or creates the core runtime systems.
@@ -207,7 +267,7 @@ Assets/
 - `SaveSystem` stores per-level leaderboard JSON and level unlock progress.
 - `SkinManager` and audio settings use Unity `PlayerPrefs`.
 
-## Save data
+### Save data
 
 On Windows, Unity normally stores this project's persistent data under:
 
@@ -217,6 +277,8 @@ On Windows, Unity normally stores this project's persistent data under:
 
 The leaderboard file is named `leaderboard_v2.json`. Level unlocks, tank colors,
 and audio settings are stored through `PlayerPrefs`.
+
+</details>
 
 ## Contributing
 

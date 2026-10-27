@@ -1,16 +1,53 @@
-# TankChaos 2D
-
-[English](README.md) | 简体中文
+<p align="center">
+  <img src="docs/images/tank-chaos-icon.svg" width="112" height="112" alt="TankChaos 绿色坦克图标">
+</p>
+<h1 align="center">TankChaos 2D</h1>
+<p align="center"><strong>反弹炮弹，切换武器，迎战 Titan。</strong></p>
+<p align="center">
+  <a href="#development"><img src="https://img.shields.io/badge/Unity-2022.3_LTS-222c36?logo=unity&amp;logoColor=white" alt="Unity 2022.3 LTS"></a>
+  <img src="https://img.shields.io/badge/Language-C%23-4f9155" alt="开发语言：C#">
+  <a href="https://github.com/Strik1nGeorge/Tank-Chaos/releases/latest"><img src="https://img.shields.io/badge/Windows-x64-2879bc" alt="Windows x64"></a>
+  <a href="https://github.com/Strik1nGeorge/Tank-Chaos/releases/tag/v1.0.1"><img src="https://img.shields.io/badge/Release-v1.0.1-3aa564" alt="发行版本 v1.0.1"></a>
+</p>
+<p align="center">
+  <a href="https://github.com/Strik1nGeorge/Tank-Chaos/releases/latest"><strong>下载 Windows 版</strong></a> ·
+  <a href="#screenshots">实机截图</a> ·
+  <a href="#controls">操作方式</a> ·
+  <a href="#development">从源码运行</a>
+</p>
+<p align="center"><a href="README.md">English</a> | 简体中文</p>
 
 TankChaos 2D 是一款使用 Unity 2022.3 LTS 开发的俯视角街机坦克射击游戏。
 玩家需要依次挑战三个难度递增的关卡，在加农炮与霰弹枪之间切换，收集临时强化，
 自定义坦克外观，并最终击败拥有三个阶段的 Boss。
 
-当前版本：**1.0.1**
+<a id="screenshots"></a>
 
-[下载最新 Windows 版本](https://github.com/GeorgeNum7/Tank-Chaos/releases/latest)
+## 实机截图
 
-## v1.0.1 主要更新
+| 初入试炼场 | 霰弹交火 |
+|:---:|:---:|
+| <a href="docs/images/gameplay.png"><img src="docs/images/gameplay.png" width="420" alt="绿色玩家坦克在砖墙和木箱组成的战场中迎战红色敌人"></a> | <a href="docs/images/combat.png"><img src="docs/images/combat.png" width="420" alt="玩家切换为霰弹枪，在交战中发射三枚散射弹丸"></a> |
+| **主菜单** | **打造你的坦克** |
+| <a href="docs/images/main-menu.png"><img src="docs/images/main-menu.png" width="420" alt="包含开始游戏、车库、排行榜、玩法说明、设置和退出的主菜单"></a> | <a href="docs/images/garage.png"><img src="docs/images/garage.png" width="420" alt="车库中的坦克预览，以及车身、履带、炮管三个独立调色板"></a> |
+
+*截图来自 Windows v1.0.1 实际运行画面，点击图片可查看大图。*
+
+## 开始游玩
+
+1. [下载最新 Windows 版本](https://github.com/Strik1nGeorge/Tank-Chaos/releases/latest)。
+2. 完整解压 ZIP 压缩包。
+3. 运行 `TankChaos_2D.exe`，点击 **Start Game**，进入 **The Proving Grounds**。
+
+请将可执行文件与配套文件夹放在一起。直接游玩无需安装 Unity，打开或构建源码时才需要。
+
+- **三关挑战，最终决战：** 从基础敌人一路推进，挑战拥有三个战斗阶段的 Titan。
+- **切换武器，改变打法：** 利用加农炮反弹、近距离霰弹，以及第三关的穿透激光。
+- **每次开局都有变化：** 在随机生成的可破坏与不可破坏掩体间周旋，收集生命和伤害强化。
+- **你的坦克，你的进度：** 独立搭配车身、履带和炮管颜色，保留本地解锁进度、设置与排行榜。
+
+<details>
+<summary><strong>v1.0.1 更新内容</strong></summary>
 
 - 新增临时穿透型激光武器和第三关专属道具池。
 - 加入背景音乐加载、曲目切换和新音乐。
@@ -19,11 +56,15 @@ TankChaos 2D 是一款使用 Unity 2022.3 LTS 开发的俯视角街机坦克射�
 - 普通加农炮弹现在可以稳定地从不可破坏墙体上反弹。
 - 补齐发布版本缺失的源码，并将项目版本统一为 1.0.1。
 
+</details>
+
 ## 游戏玩法
 
 玩家需要在 23 × 23 的战场中消灭当前关卡的所有敌人，在时间结束前完成目标，
 收集敌人掉落的强化道具，并逐步解锁后续关卡。关卡进度、设置、坦克颜色和本地
 排行榜都会在不同游戏会话之间保留。
+
+<a id="controls"></a>
 
 ### 操作方式
 
@@ -36,6 +77,9 @@ TankChaos 2D 是一款使用 Unity 2022.3 LTS 开发的俯视角街机坦克射�
 | 按住 `Left Shift` | 消耗体力进行加速 |
 | `Space` | 暂停或继续游戏 |
 
+<details>
+<summary><strong>展开查看武器、关卡、Boss 阶段与强化道具</strong></summary>
+
 ### 武器与子弹规则
 
 | 武器 | 行为 |
@@ -46,7 +90,9 @@ TankChaos 2D 是一款使用 Unity 2022.3 LTS 开发的俯视角街机坦克射�
 
 敌方子弹碰到墙体后会消失。任何能够造成伤害的弹丸都可以摧毁可破坏墙体。
 
-## 关卡
+### 关卡
+
+<p align="center"><a href="docs/images/level-select.png"><img src="docs/images/level-select.png" width="560" alt="关卡选择：试炼场已解锁，后续两关需要依次通关解锁"></a></p>
 
 | 关卡 | 名称 | 配置 |
 |---|---|---|
@@ -56,7 +102,7 @@ TankChaos 2D 是一款使用 Unity 2022.3 LTS 开发的俯视角街机坦克射�
 
 关卡按顺序解锁。通关后，分数和完成时间会写入对应关卡的本地排行榜。
 
-## Titan Boss
+### Titan Boss
 
 Titan 拥有 **45 HP**，生命值下降时会切换战斗阶段。
 
@@ -68,7 +114,7 @@ Titan 拥有 **45 HP**，生命值下降时会切换战斗阶段。
 
 阶段切换会更新 Boss HUD、触发视觉提示，并可能召唤额外敌人。
 
-## 强化道具
+### 强化道具
 
 从第二关开始，地图会定期生成强化道具；敌人死亡时也有 20% 概率掉落道具。
 
@@ -80,7 +126,16 @@ Titan 拥有 **45 HP**，生命值下降时会切换战斗阶段。
 
 玩家初始拥有 **5 HP** 和 **3 条命**，受伤后会获得 1.5 秒无敌时间。
 
-## 主要系统
+</details>
+
+<a id="development"></a>
+
+## 开发指南
+
+<details>
+<summary><strong>展开查看环境要求、源码运行、Windows 构建与架构说明</strong></summary>
+
+### 主要系统
 
 - **状态驱动的游戏流程：** `GameManager` 统一管理主菜单、关卡选择、游戏中、
   暂停、胜利和失败状态。
@@ -97,7 +152,7 @@ Titan 拥有 **45 HP**，生命值下降时会切换战斗阶段。
 - **编辑器工具：** 可通过 `Tools > Game Tools` 执行项目设置、预制体生成和
   UI 场景重建。
 
-## 环境要求
+### 环境要求
 
 - 推荐使用 Unity **2022.3.62f3 LTS**。
 - 构建 Windows 版本需要安装 Windows Build Support。
@@ -105,10 +160,10 @@ Titan 拥有 **45 HP**，生命值下降时会切换战斗阶段。
   `Packages/manifest.json` 中列出的 Unity 官方注册表包。
 - 运行游戏不需要额外的第三方运行时依赖。
 
-## 从源码运行
+### 从源码运行
 
 ```powershell
-git clone https://github.com/GeorgeNum7/Tank-Chaos.git
+git clone https://github.com/Strik1nGeorge/Tank-Chaos.git
 cd Tank-Chaos
 ```
 
@@ -121,7 +176,7 @@ cd Tank-Chaos
 `MainGame.unity` 是当前使用的游戏与构建场景。`GameScene.unity` 仍保留在仓库中，
 但已在 Build Settings 中禁用。
 
-### 重建自动生成内容
+#### 重建自动生成内容
 
 以下编辑器工具仅应在对应场景或预制体确实需要重新生成时使用：
 
@@ -134,9 +189,9 @@ Tools > Game Tools > [REBUILD FULL PROJECT]
 
 执行完整重建前，请先提交或备份场景修改。
 
-## 构建 Windows 版本
+### 构建 Windows 版本
 
-### 使用 Unity 编辑器
+#### 使用 Unity 编辑器
 
 1. 打开 `File > Build Settings`。
 2. 确认只有 `Assets/Scenes/MainGame.unity` 被启用。
@@ -147,7 +202,7 @@ Tools > Game Tools > [REBUILD FULL PROJECT]
 分发游戏时，必须将可执行文件、`TankChaos_2D_Data`、`UnityPlayer.dll`、
 `UnityCrashHandler64.exe` 和 `MonoBleedingEdge` 保持在同一个目录结构中。
 
-### 使用命令行
+#### 使用命令行
 
 ```powershell
 & "<UnityEditorPath>\Unity.exe" `
@@ -160,7 +215,7 @@ Tools > Game Tools > [REBUILD FULL PROJECT]
 
 请根据你的电脑修改项目路径与输出路径。
 
-## 项目结构
+### 项目结构
 
 ```text
 Assets/
@@ -185,7 +240,7 @@ Assets/
     └── VFX/                # 粒子、镜头震动、阴影和分数浮字
 ```
 
-## 架构说明
+### 架构说明
 
 - `GameManager` 负责高层状态机和关卡切换。
 - `GameBootstrapper` 查找或创建游戏运行所需的核心系统。
@@ -195,7 +250,7 @@ Assets/
 - `SaveSystem` 保存各关卡排行榜 JSON 和关卡解锁进度。
 - `SkinManager` 与音频设置使用 Unity `PlayerPrefs`。
 
-## 存档数据
+### 存档数据
 
 在 Windows 上，Unity 通常会将该项目的持久化数据保存到：
 
@@ -205,6 +260,8 @@ Assets/
 
 排行榜文件名为 `leaderboard_v2.json`。关卡解锁、坦克颜色和音频设置通过
 `PlayerPrefs` 保存。
+
+</details>
 
 ## 参与开发
 
