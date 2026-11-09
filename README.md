@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/tank-chaos-icon.svg" width="112" height="112" alt="TankChaos green tank icon">
+  <img src="docs/images/tank-chaos-icon.svg" width="112" height="112" alt="TankChaos icon: the green player tank facing a red enemy tank">
 </p>
 <h1 align="center">TankChaos 2D</h1>
 <p align="center"><strong>Ricochet shots. Switch weapons. Take down the Titan.</strong></p>

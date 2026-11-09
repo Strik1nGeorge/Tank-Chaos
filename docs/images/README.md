@@ -14,6 +14,7 @@ not been reconstructed or retouched.
 | `garage.png` | The garage preview and body, track, and barrel palettes |
 | `level-select.png` | Sequential level selection, with later levels still locked |
 
-`tank-chaos-icon.svg` is an original vector illustration inspired by the green
-player tank and the game's square-based art style. It is used as README artwork;
+`tank-chaos-icon.svg` is an original vector illustration built from the game's own
+sprites and colours: the green player tank facing a red enemy tank across the
+arena grass, with a crate and a brick wall at the corners. It is used as README artwork;
 the released executable and Unity player settings are unchanged.

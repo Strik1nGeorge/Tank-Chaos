@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/tank-chaos-icon.svg" width="112" height="112" alt="TankChaos 绿色坦克图标">
+  <img src="docs/images/tank-chaos-icon.svg" width="112" height="112" alt="TankChaos 图标：绿色玩家坦克对阵红色敌方坦克">
 </p>
 <h1 align="center">TankChaos 2D</h1>
 <p align="center"><strong>反弹炮弹，切换武器，迎战 Titan。</strong></p>
